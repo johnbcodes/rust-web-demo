@@ -1,0 +1,26 @@
+[package]
+name = "demo-axum-hotwire-tailwind"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "demo"
+path = "src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+askama = { version = "0.11", default-features = false, features = ["with-axum", "mime", "mime_guess"] }
+askama_axum = { version = "0.1" }
+axum = { version = "0.4" }
+fake = "2"
+lazy_static = "1"
+mime_guess = "2"
+nanoid = "0.4"
+rust-embed = "6"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.2", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+voca_rs = "1"

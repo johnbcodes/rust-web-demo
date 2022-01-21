@@ -1,0 +1,21 @@
+{
+  "name": "demo-axum-hotwire-tailwind",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "build": "run-s build:preclean build:tailwind parcel:prep build:parcel build:rustprep build:postclean",
+    "build:preclean": "rm -f ./public/*.js && rm -f ./public/*.css && rm -f ./public/*.map && rm -f templates/index.html",
+    "build:tailwind": "tailwindcss -i ./src/frontend/main.css -o ./build/main.css",
+    "parcel:prep": "cp ./src/frontend/app.js ./build/ && cp ./src/frontend/index.html ./build/",
+    "build:parcel": "parcel build ./build/index.html --public-url=/dist --dist-dir=./public/",
+    "build:rustprep": "mv ./public/index.html ./templates/",
+    "build:postclean": "rm -rf ./build"
+  },
+  "author": "",
+  "devDependencies": {
+    "@hotwired/turbo": "^7.1.0",
+    "npm-run-all": "^4.1.5",
+    "parcel": "^2.2.1",
+    "tailwindcss": "^3.0.15"
+  }
+}
