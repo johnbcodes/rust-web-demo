@@ -7,3 +7,4 @@
 /public/*.js*
 /target
 /templates/index.html
+/seed.sql

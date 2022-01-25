@@ -1,14 +1,14 @@
-<turbo-frame id="people_{{pagination.page}}" class="hidden">
+<turbo-frame id="people_{{pagination.page}}">
   {% for person in records %}
   <div class="flex flex-shrink-0">
     <div class="flex items-center flex-grow w-0 h-10 px-2 border-b border-l border-black">
-      <span>{{ person.0|e }}</span>
+      <span>{{ person.id|e }}</span>
     </div>
     <div class="flex items-center flex-grow w-0 h-10 px-2 border-b border-l border-black">
-      <span>{{ person.1|e }}</span>
+      <span>{{ person.first_name|e }}</span>
     </div>
     <div class="flex items-center flex-grow w-0 h-10 px-2 border-b border-l border-black">
-      <span>{{ person.2|e }}</span>
+      <span>{{ person.last_name|e }}</span>
     </div>
   </div>
   {% endfor %}

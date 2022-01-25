@@ -1,25 +1,32 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [package]
 name = "demo-axum-hotwire-tailwind"
 version = "0.1.0"
 edition = "2021"
+default-run = "demo"
 
 [[bin]]
 name = "demo"
 path = "src/main.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "gen_seed"
+path = "src/gen_seed.rs"
 
 [dependencies]
 askama = { version = "0.11", default-features = false, features = ["with-axum", "mime", "mime_guess"] }
 askama_axum = { version = "0.1" }
 axum = { version = "0.4" }
+dotenv = "0.15"
 fake = "2"
 lazy_static = "1"
 mime_guess = "2"
 nanoid = "0.4"
 rust-embed = "6"
 serde = { version = "1", features = ["derive"] }
+sqlx = { version = "0.5", features = [ "macros", "migrate", "postgres", "runtime-tokio-native-tls", "time" ] }
 tokio = { version = "1", features = ["full"] }
+time = "0.3"
 tower-http = { version = "0.2", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
