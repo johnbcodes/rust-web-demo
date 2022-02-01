@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>{% block title %}{{ title }}{% endblock %}</title>
+  <link rel="stylesheet" href="main.css"/>
+  <script type="module" src="app.js"></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% block content %}{% endblock %}
+</body>
+</html>

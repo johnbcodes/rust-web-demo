@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.empty\:hidden:empty { display: none; }
+.peer:invalid ~ .peer-invalid\:hidden { display: none; }
+.aria-selected\:outline-black[aria-selected="true"] { outline: 2px dotted black; }

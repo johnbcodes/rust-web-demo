@@ -377,6 +377,7 @@ dependencies = [
  "lazy_static",
  "mime_guess",
  "nanoid",
+ "regex",
  "rust-embed",
  "serde",
  "sqlx",

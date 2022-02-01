@@ -2,9 +2,9 @@
 import * as Turbo from "@hotwired/turbo"
 import { Application } from "@hotwired/stimulus"
 
-import HelloController from "./hello_controller"
+import SearchController from "./typeahead/search_controller"
+import ComboboxController from "./typeahead/combobox_controller";
 
 window.Stimulus = Application.start()
-Stimulus.register("hello", HelloController)
-
-console.log('Hello world!');
+Stimulus.register("typeahead--search", SearchController)
+Stimulus.register("typeahead--combobox", ComboboxController)

@@ -13,6 +13,10 @@ path = "src/main.rs"
 name = "gen_seed"
 path = "src/gen_seed.rs"
 
+[[bin]]
+name = "test"
+path = "src/test.rs"
+
 [dependencies]
 askama = { version = "0.11", default-features = false, features = ["with-axum", "mime", "mime_guess"] }
 askama_axum = { version = "0.1" }
@@ -22,6 +26,7 @@ fake = "2"
 lazy_static = "1"
 mime_guess = "2"
 nanoid = "0.4"
+regex = "1.5"
 rust-embed = "6"
 serde = { version = "1", features = ["derive"] }
 sqlx = { version = "0.5", features = [ "macros", "migrate", "postgres", "runtime-tokio-native-tls", "time" ] }

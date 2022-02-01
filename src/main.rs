@@ -38,6 +38,8 @@
 
 mod assets;
 mod people;
+mod scroll;
+mod typeahead;
 
 use askama::Template;
 use assets::asset_handler;
@@ -47,7 +49,6 @@ use axum::{
     routing::get,
     Router};
 use dotenv::dotenv;
-use people::people;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 use std::net::SocketAddr;
@@ -65,12 +66,15 @@ async fn main() {
         .connect(env::var("DATABASE_URL").unwrap().as_str()).await.unwrap();
 
     let app = Router::new()
-        .route("/", get(index))
-        .route("/people", get(people))
-        .route("/favicon.ico", asset_handler.into_service())
+        .route("/", get(directory))
+        .route("/typeahead-search", get(typeahead::index))
+        .route("/typeahead-search/results", get(typeahead::results))
+        .route("/infinite-scroll", get(scroll::index))
+        .route("/infinite-scroll/page", get(scroll::page))
         .route("/dist/*rest", asset_handler.into_service())
         .layer(AddExtensionLayer::new(pool))
-        .layer(TraceLayer::new_for_http());
+        .layer(TraceLayer::new_for_http())
+        .fallback(asset_handler.into_service());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     info!("listening on {addr}");
@@ -80,10 +84,10 @@ async fn main() {
         .unwrap();
 }
 
-async fn index() -> impl IntoResponse  {
+async fn directory() -> impl IntoResponse {
     IndexTemplate{}
 }
 
 #[derive(Template)]
-#[template(path = "index.html")]
+#[template(path = "directory.html")]
 struct IndexTemplate {}

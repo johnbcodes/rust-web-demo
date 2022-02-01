@@ -1,0 +1,16 @@
+<turbo-frame id="{{submission.turbo_frame}}">
+  <h1>Results</h1>
+
+  <ul role="listbox" data-typeahead--combobox-target="list">
+    {% for person in records %}
+    <li>
+      <a id="search_result_{{person.id}}"
+         href=""
+         role="option"
+         class="aria-selected:outline-black">
+        {{person|format_person|highlight(submission.query)|safe}}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</turbo-frame>
