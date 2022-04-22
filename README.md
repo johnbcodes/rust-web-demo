@@ -1,3 +1,8 @@
+## *Urgent*
+* Run migrations with docker/compose
+* Data seed setup with docker/compose
+* Document above (also from clean checkout)
+
 ## Goals
 * Better styling
   * directory
@@ -44,3 +49,7 @@
   * https://12factor.net/
   * Deployment
   * Observability
+    * Measurement
+      * Errors
+      * Performance
+      * Value stream

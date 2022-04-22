@@ -1,6 +1,16 @@
 version: "3.8"
 
 services:
+  web.app:
+    depends_on:
+      - postgresql.db
+    build:
+      context: .
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "3000:3000"
+
   postgresql.db:
     image: postgres:latest
     command: ["postgres", "-c", "log_statement=all"]
@@ -8,40 +18,9 @@ services:
       - POSTGRES_PASSWORD=changeit
     ports:
       - "5432:5432"
-
-#  eventstore.db:
-#    image: eventstore/eventstore:latest
-#    environment:
-#      - EVENTSTORE_CLUSTER_SIZE=1
-#      - EVENTSTORE_RUN_PROJECTIONS=All
-#      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
-#      - EVENTSTORE_HTTP_PORT=2113
-#      - EVENTSTORE_INSECURE=true
-#      - EVENTSTORE_DB_LOG_FORMAT=ExperimentalV3
-#    ports:
-#      - "1113:1113"
-#      - "2113:2113"
-#    volumes:
-#      - type: volume
-#        source: eventstore-volume-data
-#        target: /var/lib/eventstore
-#      - type: volume
-#        source: eventstore-volume-logs
-#        target: /var/log/eventstore
-#
-#  redis.db:
-#    image: bitnami/redis:latest
-#    environment:
-#      # ALLOW_EMPTY_PASSWORD is recommended only for development.
-#      - ALLOW_EMPTY_PASSWORD=yes
-#      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-#    ports:
-#      - "6379:6379"
-#    volumes:
-#      - "redis_data:/bitnami/redis/data"
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
 
 volumes:
-  eventstore-volume-data:
-  eventstore-volume-logs:
-  redis-data:
+  postgresql-data:
 

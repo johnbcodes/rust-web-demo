@@ -1,0 +1,70 @@
+{
+  "db": "PostgreSQL",
+  "147c567e8a2114d9ed6e2783b4daa2704176c008b0c2d7d2bca5d2a496e70afa": {
+    "query": "select * from people order by last_name, first_name limit $1 offset $2",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "first_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "last_name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "8ce3090a5cace19e494d9f6e1873d029ba613dfe7f2afbc989f1dcfcee12839a": {
+    "query": "select * from people where (first_name ilike $1 or last_name ilike $1) order by last_name, first_name limit $2 offset $3",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 1,
+          "name": "first_name",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "last_name",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  }
+}
