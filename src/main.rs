@@ -1,39 +1,5 @@
-#![warn(
-    clippy::all,
-    clippy::dbg_macro,
-    clippy::todo,
-    clippy::empty_enum,
-    clippy::enum_glob_use,
-    clippy::mem_forget,
-    clippy::unused_self,
-    clippy::filter_map_next,
-    clippy::needless_continue,
-    clippy::needless_borrow,
-    clippy::match_wildcard_for_single_variants,
-    clippy::if_let_mutex,
-    clippy::mismatched_target_os,
-    clippy::await_holding_lock,
-    clippy::match_on_vec_items,
-    clippy::imprecise_flops,
-    clippy::suboptimal_flops,
-    clippy::lossy_float_literal,
-    clippy::rest_pat_in_fully_bound_structs,
-    clippy::fn_params_excessive_bools,
-    clippy::exit,
-    clippy::inefficient_to_string,
-    clippy::linkedlist,
-    clippy::macro_use_imports,
-    clippy::option_option,
-    clippy::verbose_file_reads,
-    clippy::unnested_or_patterns,
-    rust_2018_idioms,
-    future_incompatible,
-    nonstandard_style,
-    missing_debug_implementations,
-    // missing_docs
-)]
+#![warn(clippy::all)]
 #![deny(unreachable_pub, private_in_public)]
-#![allow(elided_lifetimes_in_paths, clippy::type_complexity)]
 #![forbid(unsafe_code)]
 
 mod assets;
@@ -44,26 +10,42 @@ mod typeahead;
 use askama::Template;
 use assets::asset_handler;
 use axum::{
-    handler::Handler,
+    handler::HandlerWithoutStateExt,
     response::IntoResponse,
-    routing::get,
-    Router};
-use dotenv::dotenv;
-use sqlx::postgres::PgPoolOptions;
+    routing::{get, Router},
+};
+use dotenvy::dotenv;
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous};
 use std::env;
-use std::net::SocketAddr;
-use tower_http::{add_extension::AddExtensionLayer, trace::TraceLayer};
+use std::net::{SocketAddr, SocketAddrV4};
+use std::str::FromStr;
+use tower_http::trace::TraceLayer;
 use tracing::{info, Level};
 use tracing_subscriber::fmt;
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    fmt().with_max_level(Level::INFO).init();
+    // WARNING: Do not initialize logging before running migrations. Large migrations run slowly
+    // due to reformatting the SQL statement(s)
 
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(env::var("DATABASE_URL").unwrap().as_str()).await.unwrap();
+    let db_url = env::var("DATABASE_URL").unwrap();
+    let options = SqliteConnectOptions::from_str(db_url.as_str())
+        .unwrap()
+        .create_if_missing(true)
+        .journal_mode(SqliteJournalMode::Wal)
+        .synchronous(SqliteSynchronous::Normal)
+        .foreign_keys(true);
+
+    let pool = SqlitePoolOptions::new()
+        .max_connections(10)
+        .connect_with(options)
+        .await
+        .expect("unable to connect to database");
+
+    sqlx::migrate!().run(&pool).await.unwrap();
+
+    fmt().with_max_level(Level::INFO).init();
 
     let app = Router::new()
         .route("/", get(directory))
@@ -71,21 +53,22 @@ async fn main() {
         .route("/typeahead-search/results", get(typeahead::results))
         .route("/infinite-scroll", get(scroll::index))
         .route("/infinite-scroll/page", get(scroll::page))
-        .route("/dist/*rest", asset_handler.into_service())
-        .layer(AddExtensionLayer::new(pool))
+        .route_service("/dist/*file", asset_handler.into_service())
+        .with_state(pool)
         .layer(TraceLayer::new_for_http())
-        .fallback(asset_handler.into_service());
+        .fallback_service(asset_handler.into_service());
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    info!("listening on {addr}");
-    axum::Server::bind(&addr)
+    let addr: SocketAddrV4 = "0.0.0.0:3000".parse().unwrap();
+    let socket = SocketAddr::from(addr);
+    info!("listening on {socket}");
+    axum::Server::bind(&socket)
         .serve(app.into_make_service())
         .await
         .unwrap();
 }
 
 async fn directory() -> impl IntoResponse {
-    IndexTemplate{}
+    IndexTemplate {}
 }
 
 #[derive(Template)]

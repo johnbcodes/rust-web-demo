@@ -2,25 +2,14 @@ version: "3.8"
 
 services:
   web.app:
-    depends_on:
-      - postgresql.db
     build:
       context: .
     environment:
       - DATABASE_URL=${DATABASE_URL}
     ports:
       - "3000:3000"
-
-  postgresql.db:
-    image: postgres:latest
-    command: ["postgres", "-c", "log_statement=all"]
-    environment:
-      - POSTGRES_PASSWORD=changeit
-    ports:
-      - "5432:5432"
     volumes:
-      - postgresql-data:/var/lib/postgresql/data
+      - db-data:/app/db
 
 volumes:
-  postgresql-data:
-
+  db-data:

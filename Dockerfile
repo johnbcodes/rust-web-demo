@@ -1,69 +1,28 @@
 # Start with the more complicated docker build image
-FROM node:lts-bullseye as build
-
-# Modified from https://github.com/rust-lang/docker-rust/blob/master/1.60.0/bullseye/Dockerfile
-ENV RUSTUP_HOME=/usr/local/rustup \
-    CARGO_HOME=/usr/local/cargo \
-    PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.60.0 \
-    RUSTUP_VERSION=1.24.3
-
-RUN set -eux; \
-    dpkgArch="$(dpkg --print-architecture)"; \
-    case "${dpkgArch##*-}" in \
-        amd64) rustArch='x86_64-unknown-linux-gnu'; rustupSha256='3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338' ;; \
-        armhf) rustArch='armv7-unknown-linux-gnueabihf'; rustupSha256='67777ac3bc17277102f2ed73fd5f14c51f4ca5963adadf7f174adf4ebc38747b' ;; \
-        arm64) rustArch='aarch64-unknown-linux-gnu'; rustupSha256='32a1532f7cef072a667bac53f1a5542c99666c4071af0c9549795bbdb2069ec1' ;; \
-        i386) rustArch='i686-unknown-linux-gnu'; rustupSha256='e50d1deb99048bc5782a0200aa33e4eea70747d49dffdc9d06812fd22a372515' ;; \
-        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
-    esac; \
-    url="https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${rustArch}/rustup-init"; \
-    wget "$url"; \
-    echo "${rustupSha256} *rustup-init" | sha256sum -c -; \
-    chmod +x rustup-init; \
-    ./rustup-init -y --no-modify-path --profile minimal --default-toolchain $RUST_VERSION --default-host ${rustArch}; \
-    rm rustup-init; \
-    chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
-    rustup --version; \
-    cargo --version; \
-    rustc --version; \
-    apt-get update; \
-    apt-get install --no-install-recommends -y rsync; \
-    rm -rf /var/lib/apt/lists/*
+FROM ghcr.io/johnbcodes/node-rust:current-1.66.1 as build
 
 # create a new empty shell project
 RUN USER=root cargo new --bin app
 WORKDIR /app
 
-# copy over slow changing files
+RUN mkdir db
+
+# copy over slower changing files
 COPY package.json package-lock.json Cargo.lock Cargo.toml ./
 COPY ./public/favicon.ico ./public/favicon.ico
+# copy your source tree
+COPY tailwind.config.js ./
+COPY ./src ./src
+COPY ./templates ./templates
+COPY ./migrations ./migrations
 
 # Cache dependencies on subsequent builds
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
     --mount=type=cache,target=/app/.npm \
     npm set cache /app/.npm && \
-    npm ci && \
-    cargo build --release && \
-    rm src/*.rs
-
-# copy your source tree
-COPY ./src ./src
-COPY ./templates ./templates
-COPY sqlx-data.json tailwind.config.js ./
-
-# build for release
-RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/app/target \
-    --mount=type=cache,target=/app/.npm \
+    npm install && \
     npm run build && \
-    cargo install --path .
+    cargo install --debug --path .
 
-FROM debian:bullseye-slim
-
-## copy the build artifact from the build stage
-COPY --from=build /usr/local/cargo/bin/demo .
-
-## set the startup command to run your binary
-CMD ["./demo"]
+ENTRYPOINT ["demo"]

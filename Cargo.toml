@@ -10,22 +10,19 @@ name = "demo"
 path = "src/main.rs"
 
 [dependencies]
-#askama = { version = "0.11", default-features = false, features = ["with-axum", "mime", "mime_guess"] }
 askama = { git = "https://github.com/djc/askama", default-features = false, features = ["with-axum", "mime", "mime_guess"] }
-#askama_axum = { version = "0.1" }
 askama_axum = { git = "https://github.com/djc/askama" }
-axum = { version = "0.5" }
-dotenv = "0.15"
+axum = { version = "0.6.2" }
+dotenvy = "0.15"
 lazy_static = "1"
 mime_guess = "2"
-regex = "1.5"
+regex = "1.7"
 rust-embed = "6"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sqlx = { version = "0.5", features = [ "macros", "migrate", "offline", "postgres", "runtime-tokio-native-tls", "time" ] }
+sqlx = { version = "0.6", features = [ "macros", "migrate", "sqlite", "runtime-tokio-rustls", "time" ] }
 tokio = { version = "1", features = ["full"] }
 time = "0.3"
-tower-http = { version = "0.2", features = ["full"] }
+tower-http = { version = "0.3", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
-voca_rs = "1"
