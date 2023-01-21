@@ -15,8 +15,8 @@
 #### Docker only
 
 * Create volume with `docker volume create db-data`
-* Build with `docker build -t demo-axum .`
-* Run with `docker run --rm -itd --env-file .env -p 3000:3000 -v db-data:/app/db demo-axum`
+* Build with `docker build -t rust-web-demo .`
+* Run with `docker run --rm -itd --env-file .env -p 3000:3000 -v db-data:/app/db rust-web-demo`
 
 #### Docker Compose
 
