@@ -17,7 +17,6 @@ use axum::{
 use dotenvy::dotenv;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous};
 use std::env;
-use std::net::{SocketAddr, SocketAddrV4};
 use std::str::FromStr;
 use tower_http::trace::TraceLayer;
 use tracing::{info, Level};
@@ -58,10 +57,9 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .fallback_service(asset_handler.into_service());
 
-    let addr: SocketAddrV4 = "0.0.0.0:3000".parse().unwrap();
-    let socket = SocketAddr::from(addr);
-    info!("listening on {socket}");
-    axum::Server::bind(&socket)
+    let addr = "[::]:8080".parse().unwrap();
+    info!("listening on {addr}");
+    axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
         .unwrap();
