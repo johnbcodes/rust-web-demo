@@ -1,11 +1,11 @@
 # Start with the more complicated docker build image
 FROM ghcr.io/johnbcodes/node-rust:current-1.66.1 as build
 
+RUN mkdir -p /data
+
 # create a new empty shell project
 RUN USER=root cargo new --bin app
 WORKDIR /app
-
-RUN mkdir db
 
 # copy over slower changing files
 COPY package.json package-lock.json Cargo.lock Cargo.toml ./
@@ -24,5 +24,9 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     npm install && \
     npm run build && \
     cargo install --debug --path .
+
+ENV DATABASE_URL=sqlite://data/demo.db
+
+EXPOSE 8080
 
 ENTRYPOINT ["demo"]

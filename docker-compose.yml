@@ -5,11 +5,11 @@ services:
     build:
       context: .
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=sqlite:///data/demo.db
     ports:
-      - "3000:3000"
+      - "8080:8080"
     volumes:
-      - db-data:/app/db
+      - db-data:/data
 
 volumes:
   db-data:

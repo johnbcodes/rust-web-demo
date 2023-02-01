@@ -16,7 +16,7 @@
 
 * Create volume with `docker volume create db-data`
 * Build with `docker build -t rust-web-demo .`
-* Run with `docker run --rm -itd --env-file .env -p 3000:3000 -v db-data:/app/db rust-web-demo`
+* Run with `docker run -itd -e "DATABASE_URL=sqlite:///data/demo.db" -p 8080:8080 -v db-data:/data rust-web-demo`
 
 #### Docker Compose
 
@@ -89,6 +89,9 @@
       * Errors
       * Performance
       * Value stream
+  * SQLite Resiliency
+    * Single node - Litestream
+    * Multi-node - LiteFS
 
 [Markdown Cheatsheet](https://www.markdownguide.org/cheat-sheet/)
 

@@ -8,4 +8,4 @@
 /target
 /templates/base.html
 /seed.sql
-/*.db*
+/**/*.db*
