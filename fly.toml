@@ -3,9 +3,6 @@ app = "jbc-rust-web-demo"
 kill_signal = "SIGINT"
 kill_timeout = 5
 
-[build]
-dockerfile = "deploy/Dockerfile"
-
 [env]
 PORT = "8080"
 
