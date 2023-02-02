@@ -64,6 +64,13 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v3
 
+      - name: Compile web artifacts
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+      - run: npm ci
+      - run: npm run build
+
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@v1
         with:
