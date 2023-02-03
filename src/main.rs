@@ -29,6 +29,7 @@ async fn main() {
     // due to reformatting the SQL statement(s)
 
     let db_url = env::var("DATABASE_URL").unwrap();
+    println!("DATABASE_URL on {db_url}");
     let options = SqliteConnectOptions::from_str(db_url.as_str())
         .unwrap()
         .create_if_missing(true)
