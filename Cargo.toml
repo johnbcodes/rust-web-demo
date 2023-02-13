@@ -12,7 +12,7 @@ path = "src/main.rs"
 [dependencies]
 askama = { git = "https://github.com/djc/askama", default-features = false, features = ["with-axum", "mime", "mime_guess"] }
 askama_axum = { git = "https://github.com/djc/askama" }
-axum = { version = "0.6.2" }
+axum = { version = "0.6.6" }
 dotenvy = "0.15"
 lazy_static = "1"
 mime_guess = "2"
