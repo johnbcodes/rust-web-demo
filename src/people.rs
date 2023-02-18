@@ -74,13 +74,15 @@ async fn just_page(pool: &SqlitePool, pagination: &Pagination) -> Vec<Person> {
     let sql = r#"
       select
         *
-      from people where rowid in (
+      from people
+      where rowid in (
         select
           rowid
         from people
         order by last_name, first_name
         limit ?1
         offset ?2)
+      order by last_name, first_name
     "#;
     query_as(sql)
         .bind(pagination.per_page)
