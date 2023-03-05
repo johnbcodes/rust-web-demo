@@ -23,6 +23,18 @@
 * Build with `docker compose build`
 * Run with `docker compose up` or `docker compose up -d` (build step not necessary)
 
+## Deploying to Fly.io
+
+* Create account
+* `fly auth login`
+* `fly apps create`
+  * Update `app` property in `fly.toml` with app name 
+* `fly volumes create <volume-name> --size 1`
+  * Update `mounts.source` property in `fly.toml` with mount name
+* `fly secrets set DATABASE_URL=sqlite3:///data/demo.db`
+* `fly deploy`
+
+
 ## Further exploration
 * Docker
   * Image naming according to target environment 
