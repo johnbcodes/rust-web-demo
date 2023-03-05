@@ -18,9 +18,10 @@ use dotenvy::dotenv;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous};
 use std::env;
 use std::str::FromStr;
-use tower_http::trace::TraceLayer;
+use tower_http::trace::{DefaultOnResponse, TraceLayer};
+use tower_http::LatencyUnit;
 use tracing::{info, Level};
-use tracing_subscriber::fmt;
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
 #[tokio::main]
 async fn main() {
@@ -29,7 +30,13 @@ async fn main() {
     // due to reformatting the SQL statement(s)
 
     let db_url = env::var("DATABASE_URL").unwrap();
-    println!("DATABASE_URL on {db_url}");
+    println!("DATABASE_URL={db_url}");
+    let rust_log = env::var("RUST_LOG").unwrap_or_else(|_| {
+        let value = "INFO,tower_http=info";
+        env::set_var("RUST_LOG", value);
+        value.into()
+    });
+    println!("RUST_LOG={rust_log}");
     let options = SqliteConnectOptions::from_str(db_url.as_str())
         .unwrap()
         .create_if_missing(true)
@@ -45,7 +52,16 @@ async fn main() {
 
     sqlx::migrate!().run(&pool).await.unwrap();
 
-    fmt().with_max_level(Level::INFO).init();
+    tracing_subscriber::registry()
+        .with(EnvFilter::from_default_env())
+        .with(fmt::layer())
+        .init();
+
+    let trace_layer = TraceLayer::new_for_http().on_response(
+        DefaultOnResponse::new()
+            .level(Level::INFO)
+            .latency_unit(LatencyUnit::Micros),
+    );
 
     let app = Router::new()
         .route("/", get(directory))
@@ -55,7 +71,7 @@ async fn main() {
         .route("/infinite-scroll/page", get(scroll::page))
         .route_service("/dist/*file", asset_handler.into_service())
         .with_state(pool)
-        .layer(TraceLayer::new_for_http())
+        .layer(trace_layer)
         .fallback_service(asset_handler.into_service());
 
     let addr = "[::]:8080".parse().unwrap();
