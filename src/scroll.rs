@@ -5,7 +5,8 @@ use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
-use sqlx::SqlitePool;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use std::time::Instant;
 use tracing::info;
 
@@ -19,7 +20,7 @@ struct IndexTemplate {}
 
 pub(crate) async fn page(
     pagination: Option<Query<people::Pagination>>,
-    State(pool): State<SqlitePool>,
+    State(pool): State<Pool<SqliteConnectionManager>>,
 ) -> impl IntoResponse {
     let start = Instant::now();
     let Query(pagination) = pagination.unwrap_or_default();

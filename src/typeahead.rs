@@ -5,8 +5,9 @@ use axum::{
     extract::{Query, State},
     response::IntoResponse,
 };
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use serde::Deserialize;
-use sqlx::SqlitePool;
 
 pub(crate) async fn index() -> impl IntoResponse {
     IndexTemplate {}
@@ -18,7 +19,7 @@ struct IndexTemplate {}
 
 pub(crate) async fn results(
     query: Query<Submission>,
-    State(pool): State<SqlitePool>,
+    State(pool): State<Pool<SqliteConnectionManager>>,
 ) -> impl IntoResponse {
     let Query(submission) = query;
     let pagination = Pagination {

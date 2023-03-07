@@ -3,6 +3,7 @@
 #![forbid(unsafe_code)]
 
 mod assets;
+mod migrations;
 mod people;
 mod scroll;
 mod typeahead;
@@ -15,9 +16,10 @@ use axum::{
     routing::{get, Router},
 };
 use dotenvy::dotenv;
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions, SqliteSynchronous};
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+use rusqlite::OpenFlags as of;
 use std::env;
-use std::str::FromStr;
 use tower_http::trace::{DefaultOnResponse, TraceLayer};
 use tower_http::LatencyUnit;
 use tracing::{info, Level};
@@ -29,28 +31,29 @@ async fn main() {
     // WARNING: Do not initialize logging before running migrations. Large migrations run slowly
     // due to reformatting the SQL statement(s)
 
-    let db_url = env::var("DATABASE_URL").unwrap();
-    println!("DATABASE_URL={db_url}");
+    let db_url = env::var("DATABASE_FILE").unwrap();
+    println!("DATABASE_FILE={db_url}");
     let rust_log = env::var("RUST_LOG").unwrap_or_else(|_| {
         let value = "INFO,tower_http=info";
         env::set_var("RUST_LOG", value);
         value.into()
     });
+
+    let manager = SqliteConnectionManager::file(db_url.as_str())
+        .with_flags(of::SQLITE_OPEN_URI | of::SQLITE_OPEN_CREATE | of::SQLITE_OPEN_READ_WRITE)
+        .with_init(|conn| conn.pragma_update(None, "journal_mode", "wal"))
+        .with_init(|conn| conn.pragma_update(None, "synchronous", "normal"))
+        .with_init(|conn| conn.pragma_update(None, "foreign_keys", "on"));
+    let pool = Pool::builder()
+        .max_size(10)
+        .build(manager)
+        .expect("unable to build pool");
+
     println!("RUST_LOG={rust_log}");
-    let options = SqliteConnectOptions::from_str(db_url.as_str())
-        .unwrap()
-        .create_if_missing(true)
-        .journal_mode(SqliteJournalMode::Wal)
-        .synchronous(SqliteSynchronous::Normal)
-        .foreign_keys(true);
 
-    let pool = SqlitePoolOptions::new()
-        .max_connections(10)
-        .connect_with(options)
-        .await
-        .expect("unable to connect to database");
-
-    sqlx::migrate!().run(&pool).await.unwrap();
+    let mut conn = pool.get().unwrap();
+    migrations::MIGRATIONS.to_latest(&mut conn).unwrap();
+    drop(conn);
 
     tracing_subscriber::registry()
         .with(EnvFilter::from_default_env())

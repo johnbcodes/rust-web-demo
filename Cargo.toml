@@ -14,15 +14,17 @@ askama = { version = "0.12", default-features = false, features = ["with-axum", 
 askama_axum = "0.3"
 axum = "0.6.10"
 dotenvy = "0.15"
-lazy_static = "1"
 mime_guess = "2"
+once_cell = "1"
+r2d2 = "0.8"
+r2d2_sqlite = "0.21"
 regex = "1.7"
+rusqlite = { version = "0.28.0", features = ["bundled", "serde_json"] }
+rusqlite_migration = "1"
 rust-embed = "6"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sqlx = { version = "0.6", features = [ "macros", "migrate", "sqlite", "runtime-tokio-rustls", "time" ] }
 tokio = { version = "1", features = ["full"] }
-time = "0.3"
 tower-http = { version = "0.4", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
