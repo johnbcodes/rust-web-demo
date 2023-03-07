@@ -26,6 +26,8 @@ where
                 let mime = mime_guess::from_path(path).first_or_octet_stream();
                 Response::builder()
                     .header(header::CONTENT_TYPE, mime.as_ref())
+                    // In production change caching to one year: max-age=31536000
+                    .header(header::CACHE_CONTROL, "max-age=120")
                     .body(body)
                     .unwrap()
             }
