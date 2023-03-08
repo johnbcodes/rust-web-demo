@@ -3,6 +3,13 @@ use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::Row;
 use serde::Deserialize;
 
+#[derive(Deserialize, Debug)]
+pub(crate) struct Pagination {
+    pub(crate) page: i64,
+    pub(crate) per_page: i64,
+    pub(crate) search: Option<String>,
+}
+
 #[derive(Debug)]
 pub(crate) struct Person {
     pub(crate) id: String,
@@ -10,11 +17,10 @@ pub(crate) struct Person {
     pub(crate) last_name: String,
 }
 
-#[derive(Deserialize, Debug)]
-pub(crate) struct Pagination {
-    pub(crate) page: i64,
-    pub(crate) per_page: i64,
-    pub(crate) search: Option<String>,
+#[derive(Debug)]
+pub(crate) struct SearchResult {
+    pub(crate) id: String,
+    pub(crate) name: String,
 }
 
 impl Pagination {
@@ -41,27 +47,17 @@ impl Default for Pagination {
     }
 }
 
-pub(crate) async fn load(
-    pool: &Pool<SqliteConnectionManager>,
-    pagination: &Pagination,
-) -> Vec<Person> {
-    if pagination.search.is_some() {
-        perform_search(pool, pagination).await
-    } else {
-        just_page(pool, pagination).await
-    }
-}
-
 pub(crate) async fn perform_search(
     pool: &Pool<SqliteConnectionManager>,
     pagination: &Pagination,
-) -> Vec<Person> {
+) -> Vec<SearchResult> {
     let fmt = pagination.search.as_ref().unwrap();
     let search = format!("{fmt}*");
     // language=SQL
     let sql = r#"
       select
-        *
+        id,
+        replace(last_name || ',' || first_name, ?1, '<mark>' || ?1 || '</mark>')
       from people_fts
       where (first_name match ?1 or last_name match ?1)
       order by last_name, first_name
@@ -73,14 +69,17 @@ pub(crate) async fn perform_search(
     statement
         .query_map(
             (search, pagination.per_page, pagination.offset()),
-            map_record,
+            map_search_result,
         )
         .unwrap()
         .map(|result| result.unwrap())
         .collect()
 }
 
-async fn just_page(pool: &Pool<SqliteConnectionManager>, pagination: &Pagination) -> Vec<Person> {
+pub(crate) async fn just_page(
+    pool: &Pool<SqliteConnectionManager>,
+    pagination: &Pagination,
+) -> Vec<Person> {
     // language=SQL
     let sql = r#"
       select
@@ -98,17 +97,25 @@ async fn just_page(pool: &Pool<SqliteConnectionManager>, pagination: &Pagination
     let connection = pool.get().unwrap();
     let mut statement = connection.prepare_cached(sql).unwrap();
     statement
-        .query_map((pagination.per_page, pagination.offset()), map_record)
+        .query_map((pagination.per_page, pagination.offset()), map_person)
         .unwrap()
         .map(|result| result.unwrap())
         .collect()
 }
 
 #[inline]
-fn map_record(row: &Row<'_>) -> rusqlite::Result<Person> {
+fn map_person(row: &Row<'_>) -> rusqlite::Result<Person> {
     Ok(Person {
         id: row.get(0)?,
         first_name: row.get(1)?,
         last_name: row.get(2)?,
+    })
+}
+
+#[inline]
+fn map_search_result(row: &Row<'_>) -> rusqlite::Result<SearchResult> {
+    Ok(SearchResult {
+        id: row.get(0)?,
+        name: row.get(1)?,
     })
 }

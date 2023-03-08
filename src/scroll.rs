@@ -24,7 +24,7 @@ pub(crate) async fn page(
 ) -> impl IntoResponse {
     let start = Instant::now();
     let Query(pagination) = pagination.unwrap_or_default();
-    let records = people::load(&pool, &pagination).await;
+    let records = people::just_page(&pool, &pagination).await;
     let duration = start.elapsed().as_micros();
     info!("DB duration: {duration} μs");
     let total = records.len();

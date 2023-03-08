@@ -2,13 +2,13 @@
   <h1>Results</h1>
 
   <ul role="listbox" data-typeahead--combobox-target="list">
-    {% for person in records %}
+    {% for result in results %}
     <li>
-      <a id="search_result_{{person.id}}"
+      <a id="search_result_{{result.id}}"
          href=""
          role="option"
          class="aria-selected:outline-black">
-        {{person|format_person|highlight(submission.query)|safe}}
+        {{result.name|safe}}
       </a>
     </li>
     {% endfor %}

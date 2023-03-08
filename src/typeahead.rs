@@ -1,5 +1,7 @@
-use crate::people::{perform_search, Pagination, Person};
-
+use crate::{
+    people,
+    people::{Pagination, SearchResult},
+};
 use askama::Template;
 use axum::{
     extract::{Query, State},
@@ -8,6 +10,8 @@ use axum::{
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use serde::Deserialize;
+use std::time::Instant;
+use tracing::info;
 
 pub(crate) async fn index() -> impl IntoResponse {
     IndexTemplate {}
@@ -27,10 +31,15 @@ pub(crate) async fn results(
         per_page: 10,
         search: Some(submission.query.clone()),
     };
-    let records = perform_search(&pool, &pagination).await;
+
+    let start = Instant::now();
+    let results = people::perform_search(&pool, &pagination).await;
+    let duration = start.elapsed().as_micros();
+    info!("DB duration: {duration} μs");
+
     ResultsTemplate {
         submission,
-        records,
+        results,
     }
 }
 
@@ -44,24 +53,5 @@ pub(crate) struct Submission {
 #[template(path = "typeahead/results.html")]
 struct ResultsTemplate {
     submission: Submission,
-    records: Vec<Person>,
-}
-
-mod filters {
-    use crate::people::Person;
-    use regex::Regex;
-
-    pub(crate) fn highlight(s: &str, search: &String) -> askama::Result<String> {
-        let regex = format!("(?i)(?P<find>{search})");
-        let re = Regex::new(regex.as_str()).unwrap();
-        let result = re.replace_all(s, "<mark>$find</mark>".to_string());
-        Ok(result.to_string())
-    }
-
-    pub(crate) fn format_person(person: &Person) -> askama::Result<String> {
-        let first_name = person.first_name.clone();
-        let last_name = person.last_name.clone();
-        let result = format!("{last_name}, {first_name}");
-        Ok(result)
-    }
+    results: Vec<SearchResult>,
 }
