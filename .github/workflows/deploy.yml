@@ -3,7 +3,7 @@ name: 🚀 Deploy to Fly.io
 on:
   push:
     tags:
-      - "*"
+      - "v*"
   workflow_dispatch:
 
 jobs:
