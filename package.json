@@ -5,12 +5,12 @@
   "author": "",
   "scripts": {
     "build": "run-s build:preclean build:tailwind parcel:prepjs parcel:prephtml build:parcel build:rustprep",
-    "build:preclean": "mkdir -p target/ui/build && mkdir -p target/ui/public && rm -f target/ui/public/* && rm -f templates/base.html",
-    "build:tailwind": "tailwindcss -i ui/src/main.css -o target/ui/build/main.css",
-    "parcel:prepjs": "rsync -a --prune-empty-dirs --include '*/' --include '*.js' --include '*.ico' --exclude '*' ui/src/ target/ui/build",
-    "build:parcel": "parcel build target/ui/build/base.html --public-url=/dist --dist-dir=target/ui/public/",
-    "parcel:prephtml": "cp  ui/src/base.html target/ui/build/",
-    "build:rustprep": "cp target/ui/public/base.html ui/templates/"
+    "build:preclean": "mkdir -p ui/target/build && mkdir -p ui/target/public && rm -f ui/target/public/* && rm -f templates/base.html",
+    "build:tailwind": "tailwindcss -i ui/src/main.css -o ui/target/build/main.css",
+    "parcel:prepjs": "rsync -a --prune-empty-dirs --include '*/' --include '*.js' --include '*.ico' --exclude '*' ui/src/ ui/target/build",
+    "build:parcel": "parcel build ui/target/build/base.html --public-url=/dist --dist-dir=ui/target/public/",
+    "parcel:prephtml": "cp  ui/src/base.html ui/target/build/",
+    "build:rustprep": "cp ui/target/public/base.html ui/templates/"
   },
   "devDependencies": {
     "@github/combobox-nav": "2.1.7",
