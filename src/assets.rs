@@ -7,7 +7,7 @@ use rust_embed::RustEmbed;
 use tracing::info;
 
 #[derive(RustEmbed)]
-#[folder = "public/"]
+#[folder = "$CARGO_MANIFEST_DIR/target/ui/public/"]
 pub(crate) struct Assets;
 
 pub(crate) struct StaticFile<T>(pub(crate) T);

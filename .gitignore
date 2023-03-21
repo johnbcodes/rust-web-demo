@@ -6,6 +6,6 @@
 /public/*.css*
 /public/*.js*
 /target
-/templates/base.html
+/ui/templates/base.html
 /seed.sql
 /**/*.db*

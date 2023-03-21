@@ -33,9 +33,8 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 
 ENTRYPOINT ["demo"]
 
-# Can't use "scratch". By default Rust dynamically links to C libraries.
-# Compiling with musl has it's own complications.
-# See https://bxbrenden.github.io/ and https://github.com/emk/rust-musl-builder/issues
+# Can't use "scratch". By default Rust dynamically links to C libraries, https://bxbrenden.github.io/
+# Compiling with musl has it's own complications, https://github.com/emk/rust-musl-builder/issues
 FROM debian:stable-slim as prod
 
 WORKDIR /

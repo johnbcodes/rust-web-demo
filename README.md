@@ -2,7 +2,12 @@
 
 ### Without Docker
 
-* Install dependencies `cargo install`
+#### Prerequisites
+
+* Rust version 1.68 or greater installed
+* NodeJS version XX or greater installed
+
+* Install Rust dependencies `cargo install`
 * Build with `cargo build`
 * Run with `cargo run`
 
@@ -90,9 +95,11 @@
   * Rate limiting
     * Load testing (Oha)
 * Build
-  * Invoke NPM from cargo (build.rs)
-    * [Inspiration #1](https://github.com/koute/bytehound/blob/master/server-core/build.rs)
-    * [Inspiration #2](https://github.com/davidpdrsn/axum-live-view/blob/main/xtask/src/main.rs)
+  * ~~Invoke NPM from cargo (build.rs)~~ [On hold](https://gist.github.com/johnbcodes/46ccd7a6bc8029ec98721decaf7cbea5)
+    * ~~[Inspiration](https://github.com/koute/bytehound/blob/master/server-core/build.rs)~~
+  * Or... create separate binary that controls npm and then invokes Cargo as a library..
+    * https://docs.rs/cargo/latest/cargo/
+    * Still have to manually check for transitive js changes..
 * Operations
   * https://12factor.net/
   * Deployment
