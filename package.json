@@ -5,7 +5,7 @@
   "author": "",
   "scripts": {
     "build": "run-s build:preclean build:tailwind parcel:prepjs parcel:prephtml build:parcel build:rustprep",
-    "build:preclean": "mkdir -p ui/target/build && mkdir -p ui/target/public && rm -f ui/target/public/* && rm -f templates/base.html",
+    "build:preclean": "rm -f ui/target && rm -f templates/base.html && mkdir -p ui/target/build && mkdir -p ui/target/public",
     "build:tailwind": "tailwindcss -i ui/src/main.css -o ui/target/build/main.css",
     "parcel:prepjs": "rsync -a --prune-empty-dirs --include '*/' --include '*.js' --include '*.ico' --exclude '*' ui/src/ ui/target/build",
     "build:parcel": "parcel build ui/target/build/base.html --public-url=/dist --dist-dir=ui/target/public/",
