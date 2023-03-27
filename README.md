@@ -4,9 +4,11 @@
 
 #### Prerequisites
 
-* Rust version 1.68 or greater installed
-* NodeJS version XX or greater installed
+* Rust version 1.62.1 or greater installed
+* NodeJS version 18 or greater installed
 
+* Install Node dependencies `npm install`
+* Build with `npm run build` 
 * Install Rust dependencies `cargo install`
 * Build with `cargo build`
 * Run with `cargo run`
@@ -39,78 +41,6 @@
 * `fly secrets set DATABASE_URL=sqlite3:///data/demo.db`
 * `fly deploy`
 
-
-## Further exploration
-* Docker
-  * Image naming according to target environment 
-  * Image tagging with arguments or environment variables
-  * Environment/image considerations
-    * Debugging
-    * Performance optimizations
-    * Deploy size
-    * Observability
-    * Security
-    * Deployment
-* Better styling
-  * directory
-  * infinite scroll example
-  * typeahead search example
-* Examples
-  * Form example
-    * Validation
-      * Error handling
-    * Styling
-    * Double submission prevention
-  * EventStoreDB
-  * Tooltips
-* Application UI
-  * 3 column layout
-  * Navigation
-  * Testing
-    * WebDriver/thirty-four/chromiumoxide
-* UX
-  * Error handling / pages
-    * Remove unwraps
-  * Eventual Consistency
-  * Tooltips
-  * Navigation / Drawers
-  * Modals
-  * Keyboard navigation/shortcuts
-* Cross-cutting concerns
-  * Error handling
-  * Timeouts
-  * Caching
-  * Credential handling
-* Database(s)
-  * Pooling configuration
-* HTTP
-  * Idempotency
-* Security
-  * Sessions ([async-session](https://github.com/http-rs/async-session)/[async-sqlx-session](https://github.com/jbr/async-sqlx-session))
-    * Cookies
-    * Expiration
-  * AuthN (??) / AuthZ (Casbin)
-  * https://securityheaders.com/
-    * CSP nonces
-  * Rate limiting
-    * Load testing (Oha)
-* Build
-  * ~~Invoke NPM from cargo (build.rs)~~ [On hold](https://gist.github.com/johnbcodes/46ccd7a6bc8029ec98721decaf7cbea5)
-    * ~~[Inspiration](https://github.com/koute/bytehound/blob/master/server-core/build.rs)~~
-  * Or... create separate binary that controls npm and then invokes Cargo as a library..
-    * https://docs.rs/cargo/latest/cargo/
-    * Still have to manually check for transitive js changes..
-* Operations
-  * https://12factor.net/
-  * Deployment
-  * Observability
-    * Measurement
-      * Errors
-      * Performance
-      * Value stream
-  * SQLite Resiliency
-    * Single node - Litestream
-    * Multi-node - LiteFS
 
 [Markdown Cheatsheet](https://www.markdownguide.org/cheat-sheet/)
 
