@@ -81,9 +81,3 @@ Taking the idea even further still, there's now way to tell when transitive depe
 need updating.
 
 Will revisit once [Orogene](https://github.com/orogene/orogene), hopefully, becomes more mature and feature complete 
-
-[Markdown Cheatsheet](https://www.markdownguide.org/cheat-sheet/)
-
-[Conventional Commits Cheatsheet](https://cheatography.com/albelop/cheat-sheets/conventional-commits/)
-
-~~Strikethrough~~
