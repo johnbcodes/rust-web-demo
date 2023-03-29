@@ -9,7 +9,7 @@
     "build:tailwind": "tailwindcss -i ui/src/main.css -o ui/target/build/main.css",
     "parcel:prepjs": "rsync -a --prune-empty-dirs --include '*/' --include '*.js' --include '*.ico' --exclude '*' ui/src/ ui/target/build",
     "build:parcel": "parcel build ui/target/build/base.html --public-url=/dist --dist-dir=ui/target/public/",
-    "parcel:prephtml": "cp  ui/src/base.html ui/target/build/",
+    "parcel:prephtml": "cp ui/src/base.html ui/target/build/",
     "build:rustprep": "cp ui/target/public/base.html ui/templates/"
   },
   "devDependencies": {
@@ -20,7 +20,7 @@
     "lodash.debounce": "4.0.8",
     "npm-run-all": "4.1.5",
     "parcel": "2.8.3",
-    "tailwindcss": "3.2.7"
+    "tailwindcss": "3.3.0"
   },
   "dependencies": {
     "typescript": "^5.0"
