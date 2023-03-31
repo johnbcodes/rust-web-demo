@@ -12,6 +12,11 @@ pub(crate) struct Assets;
 
 pub(crate) struct StaticFile<T>(pub(crate) T);
 
+#[cfg(debug_assertions)]
+const MAX_AGE: &str = "max-age=120";
+#[cfg(not(debug_assertions))]
+const MAX_AGE: &str = "max-age=31536000";
+
 impl<T> IntoResponse for StaticFile<T>
 where
     T: Into<String>,
@@ -26,8 +31,7 @@ where
                 let mime = mime_guess::from_path(path).first_or_octet_stream();
                 Response::builder()
                     .header(header::CONTENT_TYPE, mime.as_ref())
-                    // In production change caching to one year: max-age=31536000
-                    .header(header::CACHE_CONTROL, "max-age=120")
+                    .header(header::CACHE_CONTROL, MAX_AGE)
                     .body(body)
                     .unwrap()
             }
