@@ -3,21 +3,27 @@
 #![forbid(unsafe_code)]
 
 mod assets;
+mod layout;
 mod migrations;
 mod people;
 mod scroll;
 mod typeahead;
 
-use askama::Template;
+// Required because of visibility of generated structs by markup.rs
+pub use people::{Pagination, Person, SearchResult};
+pub use typeahead::Submission;
+
 use assets::asset_handler;
+use axum::response::Html;
 use axum::{
     handler::HandlerWithoutStateExt,
     response::IntoResponse,
     routing::{get, Router},
 };
 use dotenvy::dotenv;
+use layout::Layout;
 use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
+use r2d2_sqlite_pool::SqliteConnectionManager;
 use rusqlite::OpenFlags as of;
 use std::env;
 use tower_http::trace::{DefaultOnResponse, TraceLayer};
@@ -28,16 +34,21 @@ use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, Env
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    // WARNING: Do not initialize logging before running migrations. Large migrations run slowly
-    // due to reformatting the SQL statement(s)
 
-    let db_url = env::var("DATABASE_FILE").unwrap();
-    println!("DATABASE_FILE={db_url}");
     let rust_log = env::var("RUST_LOG").unwrap_or_else(|_| {
         let value = "INFO,tower_http=info";
         env::set_var("RUST_LOG", value);
         value.into()
     });
+    println!("RUST_LOG={rust_log}");
+
+    tracing_subscriber::registry()
+        .with(EnvFilter::from_default_env())
+        .with(fmt::layer())
+        .init();
+
+    let db_url = env::var("DATABASE_FILE").unwrap();
+    println!("DATABASE_FILE={db_url}");
 
     let manager = SqliteConnectionManager::file(db_url.as_str())
         .with_flags(of::SQLITE_OPEN_URI | of::SQLITE_OPEN_CREATE | of::SQLITE_OPEN_READ_WRITE)
@@ -49,16 +60,9 @@ async fn main() {
         .build(manager)
         .expect("unable to build pool");
 
-    println!("RUST_LOG={rust_log}");
-
     let mut conn = pool.get().unwrap();
     migrations::MIGRATIONS.to_latest(&mut conn).unwrap();
     drop(conn);
-
-    tracing_subscriber::registry()
-        .with(EnvFilter::from_default_env())
-        .with(fmt::layer())
-        .init();
 
     let trace_layer = TraceLayer::new_for_http().on_response(
         DefaultOnResponse::new()
@@ -86,9 +90,19 @@ async fn main() {
 }
 
 async fn directory() -> impl IntoResponse {
-    IndexTemplate {}
-}
+    let template = Layout {
+        head: markup::new! {
+            title { "Demo Directory" }
+        },
+        body: markup::new! {
+            main {
+              ul {
+                li { a[href="/typeahead-search"] { "Typeahead Searching with Turbo Frames and Stimulus controllers" } }
+                li { a[href="/infinite-scroll"] { "Infinite Scroll with Turbo Frames" } }
+              }
+            }
+        },
+    };
 
-#[derive(Template)]
-#[template(path = "directory.html")]
-struct IndexTemplate {}
+    Html(template.to_string())
+}

@@ -1,24 +1,24 @@
 use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
+use r2d2_sqlite_pool::SqliteConnectionManager;
 use rusqlite::Row;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
-pub(crate) struct Pagination {
+pub struct Pagination {
     pub(crate) page: i64,
     pub(crate) per_page: i64,
     pub(crate) search: Option<String>,
 }
 
 #[derive(Debug)]
-pub(crate) struct Person {
+pub struct Person {
     pub(crate) id: String,
     pub(crate) first_name: String,
     pub(crate) last_name: String,
 }
 
 #[derive(Debug)]
-pub(crate) struct SearchResult {
+pub struct SearchResult {
     pub(crate) id: String,
     pub(crate) name: String,
 }

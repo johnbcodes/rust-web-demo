@@ -37,7 +37,7 @@ where
             }
             None => Response::builder()
                 .status(StatusCode::NOT_FOUND)
-                .body(boxed(Full::from("404")))
+                .body(boxed(Full::from("Not Found")))
                 .unwrap(),
         }
     }

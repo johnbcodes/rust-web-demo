@@ -1,25 +1,28 @@
 use crate::{
+    layout::Layout,
     people,
     people::{Pagination, SearchResult},
 };
-use askama::Template;
 use axum::{
     extract::{Query, State},
-    response::IntoResponse,
+    response::{Html, IntoResponse},
 };
 use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
+use r2d2_sqlite_pool::SqliteConnectionManager;
 use serde::Deserialize;
 use std::time::Instant;
 use tracing::info;
 
 pub(crate) async fn index() -> impl IntoResponse {
-    IndexTemplate {}
-}
+    let template = Layout {
+        head: markup::new! {
+            title { "Typeahead Search Example" }
+        },
+        body: Index {},
+    };
 
-#[derive(Template)]
-#[template(path = "typeahead/index.html")]
-struct IndexTemplate {}
+    Html(template.to_string())
+}
 
 pub(crate) async fn results(
     query: Query<Submission>,
@@ -37,21 +40,67 @@ pub(crate) async fn results(
     let duration = start.elapsed().as_micros();
     info!("DB duration: {duration} μs");
 
-    ResultsTemplate {
-        submission,
-        results,
-    }
+    Html(
+        Results {
+            submission: &submission,
+            results: &results,
+        }
+        .to_string(),
+    )
 }
 
 #[derive(Deserialize, Debug)]
-pub(crate) struct Submission {
+pub struct Submission {
     query: String,
     turbo_frame: String,
 }
 
-#[derive(Template)]
-#[template(path = "typeahead/results.html")]
-struct ResultsTemplate {
-    submission: Submission,
-    results: Vec<SearchResult>,
+markup::define! {
+    Index() {
+        header["data-controller"="typeahead--combobox"] {
+            form[action="/typeahead-search/results",
+                "data-turbo-frame"="search_results",
+                "data-controller"="typeahead--search",
+                "data-action"="invalid->typeahead--search#hideValidationMessage:capture input->typeahead--search#submit",
+                class="peer"] {
+
+                label["for"="search_query"] { "Query" }
+                input[id="search_query",
+                    name="query",
+                    "type"="search",
+                    pattern=".*\\w+.*",
+                    required,
+                    autocomplete="off",
+                    "data-typeahead--combobox-target"="input",
+                    "data-action"="focus->typeahead--combobox#start focusout->typeahead--combobox#stop"] {}
+                input[id="turbo_frame", "type"="hidden", name="turbo_frame", value="search_results"] {}
+                button["data-typeahead--search-target"="submit"]{
+                    "Search"
+                }
+                $"turbo-frame"[id="search_results", target="_top", class="empty:hidden peer-invalid:hidden"] {}
+            }
+        }
+        main {
+
+        }
+    }
+
+    Results<'a>(submission: &'a Submission, results: &'a Vec<SearchResult>) {
+        $"turbo-frame"[id={&submission.turbo_frame}] {
+            h1 { "Results" }
+
+            ul[role="listbox", "data-typeahead--combobox-target"="list"] {
+                @for result in *results {
+                    li {
+                        a[id={format!("search_result_{}", result.id)},
+                            href="",
+                            role="option",
+                            class="aria-selected:outline-black"] {
+                                @markup::raw(&result.name)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
