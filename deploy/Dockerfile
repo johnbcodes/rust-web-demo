@@ -7,7 +7,6 @@ WORKDIR /app
 
 # copy over slower changing files
 COPY package.json package-lock.json Cargo.lock Cargo.toml ./
-COPY ./public/favicon.ico ./public/favicon.ico
 
 # Cache dependencies on subsequent builds
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
