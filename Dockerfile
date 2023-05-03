@@ -1,5 +1,5 @@
 # Start with the more complicated docker build image
-FROM ghcr.io/johnbcodes/node-rust:current-1.66.1 as build
+FROM ghcr.io/johnbcodes/node-rust:current-1.69.0 as build
 
 RUN mkdir -p /data
 
@@ -9,12 +9,12 @@ WORKDIR /app
 
 # copy over slower changing files
 COPY package.json package-lock.json Cargo.lock Cargo.toml ./
-COPY ./public/favicon.ico ./public/favicon.ico
 # copy your source tree
 COPY tailwind.config.js ./
-COPY ./src ./src
-COPY ./templates ./templates
+COPY build.rs ./
 COPY ./migrations ./migrations
+COPY ./ui ./ui
+COPY ./src ./src
 
 # Cache dependencies on subsequent builds
 RUN --mount=type=cache,target=/usr/local/cargo/registry \

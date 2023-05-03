@@ -1,5 +1,5 @@
 # Start with the more complicated docker build image
-FROM ghcr.io/johnbcodes/node-rust:current-1.66.1 as build
+FROM ghcr.io/johnbcodes/node-rust:current-1.69.0 as build
 
 # create a new empty shell project
 RUN USER=root cargo new --bin app
@@ -20,9 +20,10 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 
 # copy your source tree
 COPY tailwind.config.js ./
-COPY ./src ./src
-COPY ./templates ./templates
+COPY build.rs ./
 COPY ./migrations ./migrations
+COPY ./ui ./ui
+COPY ./src ./src
 
 # build for release
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
