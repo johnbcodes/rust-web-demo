@@ -10,15 +10,13 @@ name = "demo"
 path = "src/main.rs"
 
 [dependencies]
-askama = { version = "0.12", default-features = false, features = ["with-axum", "mime", "mime_guess"] }
-askama_axum = "0.3"
 axum = "0.6"
 dotenvy = "0.15"
+markup = "0.13"
 mime_guess = "2"
 once_cell = "1"
 r2d2 = "0.8"
-#r2d2_sqlite = "0.21"
-r2d2_sqlite = { version = "0.21", git = "https://github.com/johnbcodes/r2d2-sqlite.git", branch = "rusqlite-upgrade" }
+r2d2_sqlite_pool = "0.1"
 rusqlite = { version = "0.29", features = ["bundled", "serde_json"] }
 rusqlite_migration = "1"
 rust-embed = { version = "6", features = ["interpolate-folder-path"] }
