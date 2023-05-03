@@ -25,7 +25,7 @@
 
 * Create volume with `docker volume create db-data`
 * Build with `docker build -t rust-web-demo .`
-* Run with `docker run -itd -e "DATABASE_URL=sqlite:///data/demo.db" -p 8080:8080 -v db-data:/data rust-web-demo`
+* Run with `docker run -itd -e "DATABASE_FILE=/data/demo.db" -p 8080:8080 -v db-data:/data rust-web-demo`
 
 #### Docker Compose
 
