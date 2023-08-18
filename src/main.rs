@@ -23,7 +23,7 @@ use axum::{
 use dotenvy::dotenv;
 use layout::Layout;
 use r2d2::Pool;
-use r2d2_sqlite_pool::SqliteConnectionManager;
+use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::OpenFlags as of;
 use std::env;
 use tower_http::trace::{DefaultOnResponse, TraceLayer};

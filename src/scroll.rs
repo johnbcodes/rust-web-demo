@@ -4,7 +4,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use r2d2::Pool;
-use r2d2_sqlite_pool::SqliteConnectionManager;
+use r2d2_sqlite::SqliteConnectionManager;
 use std::time::Instant;
 use tracing::info;
 
