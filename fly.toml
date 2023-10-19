@@ -1,4 +1,4 @@
-app = "jbc-rust-web-demo-v2"
+app = "jbc-rust-web-demo"
 primary_region = "mia"
 
 kill_signal = "SIGINT"
