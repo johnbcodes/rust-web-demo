@@ -32,13 +32,25 @@
 * Build with `docker compose build`
 * Run with `docker compose up` or `docker compose up -d` (build step not necessary)
 
-## Deploying to Fly.io
-
-* Create account
+## Initial deployment to fly.io with `flyctl` (aliased to `fly`)
+* Create account if necessary
 * `fly auth login`
-* `fly apps create`
-  * Update `app` property in `fly.toml` with app name 
-* `fly volumes create <volume-name> --size 1`
-  * Update `mounts.source` property in `fly.toml` with mount name
+* `fly apps create <GLOBALLY-UNIQUE-APP-NAME>`
+  * Update `app` property in `fly.toml` with <APP-NAME>
+* Choose fly.io region
+  * Update `primary_region` property in `fly.toml`
+* `fly volumes create <VOLUME-NAME> -s 1 -r <REGION>`
+  * Update `mounts.source` property in `fly.toml` with <VOLUME-NAME>
 * `fly secrets set DATABASE_FILE=/data/demo.db`
-* `fly deploy`
+* `docker build -t registry.fly.io/<GLOBALLY-UNIQUE-APP-NAME>:<VERSION-NUMBER> .`
+* `fly deploy --image registry.fly.io/<GLOBALLY-UNIQUE-APP-NAME>:<VERSION-NUMBER>`
+
+## Automated deployment of new versions with GitHub [action](.github/workflows/deploy.yml)
+* Tag release with a tag name starting with 'v'
+  * Example: `git tag -a v2 -m "My new release!" && git push --tags`
+
+## Manual deployment from local image
+* `docker build -t registry.fly.io/<GLOBALLY-UNIQUE-APP-NAME>:<VERSION-NUMBER> .`
+* `fly auth docker`
+* `docker push registry.fly.io/<GLOBALLY-UNIQUE-APP-NAME>:<VERSION-NUMBER>`
+* `fly deploy --image registry.fly.io/<GLOBALLY-UNIQUE-APP-NAME>:<VERSION-NUMBER>`
