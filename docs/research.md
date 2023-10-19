@@ -5,7 +5,6 @@
     * Environment/image considerations
         * Debugging
         * Performance optimizations
-        * ~~Deploy size~~
         * Observability
         * Security
         * Deployment
@@ -38,8 +37,6 @@
     * Timeouts
     * Caching
     * Credential handling
-* ~~Database(s)~~
-    * ~~Pooling configuration~~
 * HTTP
     * Idempotency
 * Security
@@ -65,9 +62,6 @@
             * Errors
             * Performance
             * Value stream
-    * SQLite Resiliency
-        * Single node - Litestream
-        * Multi-node - LiteFS
 
 
 ### Invoking NPM from Cargo
