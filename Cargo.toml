@@ -9,6 +9,9 @@ default-run = "demo"
 name = "demo"
 path = "src/main.rs"
 
+[profile.release]
+lto = true
+
 [dependencies]
 axum = "0.6"
 dotenvy = "0.15"
