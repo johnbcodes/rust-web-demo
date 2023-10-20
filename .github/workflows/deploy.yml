@@ -37,6 +37,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          target: deploy
           push: true
           tags:
             registry.fly.io/${{ steps.app_name.outputs.value }}:${{ github.ref_name }}

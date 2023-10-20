@@ -1,5 +1,5 @@
 # Start with the more complicated docker build image
-FROM ghcr.io/johnbcodes/node-rust:current-1.73.0 as build
+FROM ghcr.io/johnbcodes/node-rust:current-1.73.0 as base
 
 # we need rsync
 RUN set -eux; \
@@ -23,6 +23,9 @@ COPY ./migrations ./migrations
 COPY ./ui ./ui
 COPY ./src ./src
 
+## Debug build
+FROM base as debug
+
 # Cache dependencies on subsequent builds
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
@@ -32,21 +35,37 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     npm run build && \
     cargo install --debug --path .
 
+## Deploy locally
+FROM debug as dev
+
 ENV DATABASE_URL=sqlite://data/demo.db
 
 EXPOSE 8080
 
 ENTRYPOINT ["demo"]
 
+## Release build
+FROM base as release
+
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    --mount=type=cache,target=/app/.npm \
+    npm set cache /app/.npm && \
+    npm ci && \
+    npm run build && \
+    cargo build --release && \
+    cargo install --path .
+
+
 # Can't use "scratch". By default Rust dynamically links to C libraries, https://bxbrenden.github.io/
 # Compiling with musl has it's own complications, https://github.com/emk/rust-musl-builder/issues
-FROM debian:bookworm-slim as prod
+FROM debian:bookworm-slim as deploy
 
 WORKDIR /
 
 RUN mkdir data
 
-COPY --from=build /usr/local/cargo/bin/demo .
+COPY --from=release /usr/local/cargo/bin/demo .
 
 ENV DATABASE_URL=sqlite://data/demo.db
 

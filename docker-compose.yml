@@ -3,7 +3,7 @@ version: "3.8"
 services:
   web.app:
     build:
-      target: build
+      target: dev
     environment:
       - DATABASE_FILE=/data/demo.db
     ports:
