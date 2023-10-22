@@ -46,6 +46,7 @@
 * `fly deploy --image registry.fly.io/<GLOBALLY-UNIQUE-APP-NAME>:<VERSION-NUMBER>`
 
 ## Automated deployment of new versions with GitHub [action](.github/workflows/deploy.yml)
+* [Set up](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) your `FLY_API_TOKEN` [secret](https://fly.io/docs/reference/deploy-tokens/) in your repository 
 * Tag release with a tag name starting with 'v'
   * Example: `git tag -a v2 -m "My new release!" && git push --tags`
 
