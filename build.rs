@@ -32,13 +32,13 @@ fn main() {
 
     let mut panics: Vec<&str> = vec![];
     if !found_css {
-        panics.push("Did not find CSS!!");
+        panics.push("Did not find compiled CSS!! Please execute `npm run build`");
     }
     if !found_favicon {
-        panics.push("Did not find favicon!!");
+        panics.push("Did not find favicon!! Please execute `npm run build`");
     }
     if !found_script {
-        panics.push("Did not find script!!");
+        panics.push("Did not find compiled JavaScript!! Please execute `npm run build`");
     }
     if !panics.is_empty() {
         panic!("{}", panics.join("\n"));
