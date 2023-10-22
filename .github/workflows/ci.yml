@@ -23,7 +23,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Run cargo check
-        run: cargo check --verbose
+        run: cargo check
 
   test:
     name: Test Suite
@@ -43,7 +43,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Run cargo test
-        run: cargo test --verbose
+        run: cargo test
 
   lints:
     name: Lints
@@ -66,7 +66,7 @@ jobs:
 
       - name: Run cargo clippy on tests
         # TODO add pedantic checks back in -- -Dclippy::pedantic
-        run: cargo clippy --tests --verbose -- -Dclippy::all
+        run: cargo clippy --tests -- -Dclippy::all
 
   format:
     name: Formatting
@@ -81,4 +81,4 @@ jobs:
           components: rustfmt
 
       - name: Run cargo fmt
-        run: cargo fmt --verbose -- --check
+        run: cargo fmt -- --check
