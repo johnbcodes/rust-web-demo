@@ -80,6 +80,8 @@ pub(crate) async fn just_page(
     pool: &Pool<SqliteConnectionManager>,
     pagination: &Pagination,
 ) -> Vec<Person> {
+    // Performance is faster than doing pure select * where limit offset
+    // See https://stackoverflow.com/a/49651023
     // language=SQL
     let sql = r#"
       select
