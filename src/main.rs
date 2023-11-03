@@ -3,14 +3,19 @@
 #![forbid(unsafe_code)]
 
 mod assets;
+mod diesel_ext;
 mod layout;
-mod migrations;
 mod people;
+mod schema;
 mod scroll;
 mod typeahead;
 
+//noinspection RsUnusedImport
 // Required because of visibility of generated structs by markup.rs
-pub use people::{Pagination, Person, SearchResult};
+pub use people::{
+    model::{Person, SearchResult},
+    Pagination,
+};
 pub use typeahead::Submission;
 
 use assets::asset_handler;
@@ -20,16 +25,19 @@ use axum::{
     response::IntoResponse,
     routing::{get, Router},
 };
+use diesel::connection::SimpleConnection;
+use diesel::prelude::*;
+use diesel::r2d2::{ConnectionManager, Pool};
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenvy::dotenv;
 use layout::Layout;
-use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::OpenFlags as of;
 use std::env;
 use tower_http::trace::{DefaultOnResponse, TraceLayer};
 use tower_http::LatencyUnit;
 use tracing::{info, Level};
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+
+const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
 #[tokio::main]
 async fn main() {
@@ -47,21 +55,27 @@ async fn main() {
         .with(fmt::layer())
         .init();
 
-    let db_url = env::var("DATABASE_FILE").unwrap();
-    println!("DATABASE_FILE={db_url}");
+    let database_url = env::var("DATABASE_URL").unwrap();
+    println!("DATABASE_URL={database_url}");
 
-    let manager = SqliteConnectionManager::file(db_url.as_str())
-        .with_flags(of::SQLITE_OPEN_URI | of::SQLITE_OPEN_CREATE | of::SQLITE_OPEN_READ_WRITE)
-        .with_init(|conn| conn.pragma_update(None, "journal_mode", "wal"))
-        .with_init(|conn| conn.pragma_update(None, "synchronous", "normal"))
-        .with_init(|conn| conn.pragma_update(None, "foreign_keys", "on"));
+    let manager = ConnectionManager::<SqliteConnection>::new(database_url);
     let pool = Pool::builder()
         .max_size(10)
         .build(manager)
-        .expect("unable to build pool");
+        .expect("Could not build connection pool");
 
     let mut conn = pool.get().unwrap();
-    migrations::MIGRATIONS.to_latest(&mut conn).unwrap();
+
+    conn.batch_execute("
+        PRAGMA journal_mode = WAL;          -- better write-concurrency
+        PRAGMA synchronous = NORMAL;        -- fsync only in critical moments
+        PRAGMA wal_autocheckpoint = 1000;   -- write WAL changes back every 1000 pages, for an in average 1MB WAL file. May affect readers if number is increased
+        PRAGMA wal_checkpoint(TRUNCATE);    -- free some space by truncating possibly massive WAL files from the last run.
+        PRAGMA busy_timeout = 250;          -- sleep if the database is busy
+        PRAGMA foreign_keys = ON;           -- enforce foreign keys
+    ").unwrap();
+
+    conn.run_pending_migrations(MIGRATIONS).unwrap();
     drop(conn);
 
     let trace_layer = TraceLayer::new_for_http().on_response(
