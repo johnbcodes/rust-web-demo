@@ -1,3 +1,5 @@
+use crate::diesel_ext::dsl::*;
+use crate::schema::{people, people_fts};
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use regex::Regex;
@@ -58,21 +60,23 @@ pub(crate) async fn perform_search(
     pool: &Pool<ConnectionManager<SqliteConnection>>,
     pagination: &Pagination,
 ) -> Vec<model::SearchResult> {
-    use crate::diesel_ext::dsl::*;
-    use crate::schema::people_fts::dsl::*;
-
     let search = pagination.search.as_ref().unwrap();
     let wildcard = format!("{search}*");
 
     let mut connection = pool.get().unwrap();
-    let mut results: Vec<model::SearchResult> = people_fts
-        .select((id, last_name.concat(", ").concat(first_name)))
+    let mut results: Vec<model::SearchResult> = people_fts::table
+        .select((
+            people_fts::id,
+            people_fts::last_name
+                .concat(", ")
+                .concat(people_fts::first_name),
+        ))
         .filter(
-            last_name
+            people_fts::last_name
                 .matches(&wildcard)
-                .or(first_name.matches(&wildcard)),
+                .or(people_fts::first_name.matches(&wildcard)),
         )
-        .order((last_name, first_name))
+        .order((people_fts::last_name, people_fts::first_name))
         .limit(pagination.per_page)
         .offset(pagination.offset())
         .get_results(&mut connection)
@@ -93,27 +97,22 @@ pub(crate) async fn just_page(
     pool: &Pool<ConnectionManager<SqliteConnection>>,
     pagination: &Pagination,
 ) -> Vec<model::Person> {
-    use crate::schema::people::dsl::*;
-
     let mut connection = pool.get().unwrap();
-    let (people1, people2) = diesel::alias!(
-        crate::schema::people as people1,
-        crate::schema::people as people2
-    );
+    let (people1, people2) = diesel::alias!(people as people1, people as people2);
 
     // Performance is faster than doing pure select * where limit offset
     // See https://stackoverflow.com/a/49651023
     people1
         .filter(
-            people1.field(rowid).eq_any(
+            people1.field(people::rowid).eq_any(
                 people2
-                    .select(people2.field(rowid))
-                    .order(people2.fields((last_name, first_name)))
+                    .select(people2.field(people::rowid))
+                    .order(people2.fields((people::last_name, people::first_name)))
                     .limit(pagination.per_page)
                     .offset(pagination.offset()),
             ),
         )
-        .order(people1.fields((last_name, first_name)))
+        .order(people1.fields((people::last_name, people::first_name)))
         .get_results(&mut connection)
         .unwrap()
 }
