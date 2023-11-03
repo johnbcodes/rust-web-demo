@@ -3,8 +3,8 @@ use axum::{
     extract::{Query, State},
     response::{Html, IntoResponse},
 };
-use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
+use diesel::prelude::*;
+use diesel::r2d2::{ConnectionManager, Pool};
 use std::time::Instant;
 use tracing::info;
 
@@ -21,7 +21,7 @@ pub(crate) async fn index() -> impl IntoResponse {
 
 pub(crate) async fn page(
     pagination: Option<Query<people::Pagination>>,
-    State(pool): State<Pool<SqliteConnectionManager>>,
+    State(pool): State<Pool<ConnectionManager<SqliteConnection>>>,
 ) -> impl IntoResponse {
     let start = Instant::now();
     let Query(pagination) = pagination.unwrap_or_default();
@@ -67,7 +67,7 @@ markup::define! {
         }
     }
 
-    Pager<'a>(pagination: &'a people::Pagination, records: &'a Vec<people::Person>) {
+    Pager<'a>(pagination: &'a people::Pagination, records: &'a Vec<people::model::Person>) {
         $"turbo-frame"[id={format!("people_{}", pagination.page)}] {
             @for record in *records {
                 div[class="flex flex-shrink-0"] {

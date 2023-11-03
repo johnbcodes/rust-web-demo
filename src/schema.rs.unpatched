@@ -1,0 +1,9 @@
+// @generated automatically by Diesel CLI.
+
+diesel::table! {
+    people (id) {
+        id -> Text,
+        first_name -> Text,
+        last_name -> Text,
+    }
+}

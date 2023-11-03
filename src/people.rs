@@ -1,6 +1,6 @@
-use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::Row;
+use diesel::prelude::*;
+use diesel::r2d2::{ConnectionManager, Pool};
+use regex::Regex;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -10,17 +10,24 @@ pub struct Pagination {
     pub(crate) search: Option<String>,
 }
 
-#[derive(Debug)]
-pub struct Person {
-    pub(crate) id: String,
-    pub(crate) first_name: String,
-    pub(crate) last_name: String,
-}
+pub(crate) mod model {
+    use diesel::prelude::*;
 
-#[derive(Debug)]
-pub struct SearchResult {
-    pub(crate) id: String,
-    pub(crate) name: String,
+    #[derive(Debug, Queryable, Selectable)]
+    #[diesel(table_name = crate::schema::people)]
+    #[allow(dead_code)]
+    pub struct Person {
+        pub(crate) rowid: i64,
+        pub(crate) id: String,
+        pub(crate) first_name: String,
+        pub(crate) last_name: String,
+    }
+
+    #[derive(Debug, Queryable)]
+    pub struct SearchResult {
+        pub(crate) id: String,
+        pub(crate) name: String,
+    }
 }
 
 impl Pagination {
@@ -28,7 +35,7 @@ impl Pagination {
         (self.page - 1) * self.per_page
     }
 
-    pub(crate) fn next_page(&self, records: &Vec<Person>) -> Option<i64> {
+    pub(crate) fn next_page(&self, records: &Vec<model::Person>) -> Option<i64> {
         if (records.len() as i64) == self.per_page {
             Some(self.page + 1)
         } else {
@@ -48,76 +55,65 @@ impl Default for Pagination {
 }
 
 pub(crate) async fn perform_search(
-    pool: &Pool<SqliteConnectionManager>,
+    pool: &Pool<ConnectionManager<SqliteConnection>>,
     pagination: &Pagination,
-) -> Vec<SearchResult> {
-    let fmt = pagination.search.as_ref().unwrap();
-    let search = format!("{fmt}*");
-    // language=SQL
-    let sql = r#"
-      select
-        id,
-        replace(last_name || ',' || first_name, ?1, '<mark>' || ?1 || '</mark>')
-      from people_fts
-      where (first_name match ?1 or last_name match ?1)
-      order by last_name, first_name
-      limit ?2
-      offset ?3
-    "#;
-    let connection = pool.get().unwrap();
-    let mut statement = connection.prepare_cached(sql).unwrap();
-    statement
-        .query_map(
-            (search, pagination.per_page, pagination.offset()),
-            map_search_result,
+) -> Vec<model::SearchResult> {
+    use crate::diesel_ext::dsl::*;
+    use crate::schema::people_fts::dsl::*;
+
+    let search = pagination.search.as_ref().unwrap();
+    let wildcard = format!("{search}*");
+
+    let mut connection = pool.get().unwrap();
+    let mut results: Vec<model::SearchResult> = people_fts
+        .select((id, last_name.concat(", ").concat(first_name)))
+        .filter(
+            last_name
+                .matches(&wildcard)
+                .or(first_name.matches(&wildcard)),
         )
-        .unwrap()
-        .map(|result| result.unwrap())
-        .collect()
+        .order((last_name, first_name))
+        .limit(pagination.per_page)
+        .offset(pagination.offset())
+        .get_results(&mut connection)
+        .unwrap();
+
+    let format = format!("((?i){search})");
+    let regex = Regex::new(format.as_str()).unwrap();
+    for result in &mut results {
+        result.name = regex
+            .replace_all(&result.name, "<mark>$1</mark>")
+            .to_string();
+    }
+
+    results
 }
 
 pub(crate) async fn just_page(
-    pool: &Pool<SqliteConnectionManager>,
+    pool: &Pool<ConnectionManager<SqliteConnection>>,
     pagination: &Pagination,
-) -> Vec<Person> {
+) -> Vec<model::Person> {
+    use crate::schema::people::dsl::*;
+
+    let mut connection = pool.get().unwrap();
+    let (people1, people2) = diesel::alias!(
+        crate::schema::people as people1,
+        crate::schema::people as people2
+    );
+
     // Performance is faster than doing pure select * where limit offset
     // See https://stackoverflow.com/a/49651023
-    // language=SQL
-    let sql = r#"
-      select
-        *
-      from people
-      where rowid in (
-        select
-          rowid
-        from people
-        order by last_name, first_name
-        limit ?1
-        offset ?2)
-      order by last_name, first_name
-    "#;
-    let connection = pool.get().unwrap();
-    let mut statement = connection.prepare_cached(sql).unwrap();
-    statement
-        .query_map((pagination.per_page, pagination.offset()), map_person)
+    people1
+        .filter(
+            people1.field(rowid).eq_any(
+                people2
+                    .select(people2.field(rowid))
+                    .order(people2.fields((last_name, first_name)))
+                    .limit(pagination.per_page)
+                    .offset(pagination.offset()),
+            ),
+        )
+        .order(people1.fields((last_name, first_name)))
+        .get_results(&mut connection)
         .unwrap()
-        .map(|result| result.unwrap())
-        .collect()
-}
-
-#[inline]
-fn map_person(row: &Row<'_>) -> rusqlite::Result<Person> {
-    Ok(Person {
-        id: row.get(0)?,
-        first_name: row.get(1)?,
-        last_name: row.get(2)?,
-    })
-}
-
-#[inline]
-fn map_search_result(row: &Row<'_>) -> rusqlite::Result<SearchResult> {
-    Ok(SearchResult {
-        id: row.get(0)?,
-        name: row.get(1)?,
-    })
 }

@@ -1,14 +1,14 @@
 use crate::{
     layout::Layout,
     people,
-    people::{Pagination, SearchResult},
+    people::{model::SearchResult, Pagination},
 };
 use axum::{
     extract::{Query, State},
     response::{Html, IntoResponse},
 };
-use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
+use diesel::prelude::*;
+use diesel::r2d2::{ConnectionManager, Pool};
 use serde::Deserialize;
 use std::time::Instant;
 use tracing::info;
@@ -26,7 +26,7 @@ pub(crate) async fn index() -> impl IntoResponse {
 
 pub(crate) async fn results(
     query: Query<Submission>,
-    State(pool): State<Pool<SqliteConnectionManager>>,
+    State(pool): State<Pool<ConnectionManager<SqliteConnection>>>,
 ) -> impl IntoResponse {
     let Query(submission) = query;
     let pagination = Pagination {
@@ -37,8 +37,9 @@ pub(crate) async fn results(
 
     let start = Instant::now();
     let results = people::perform_search(&pool, &pagination).await;
+    let count = results.len();
     let duration = start.elapsed().as_micros();
-    info!("DB duration: {duration} μs");
+    info!("DB duration for {count} record(s): {duration} μs");
 
     Html(
         Results {
