@@ -1,5 +1,5 @@
 # Start with the more complicated docker build image
-FROM ghcr.io/johnbcodes/node-rust:current-1.73.0 as base
+FROM ghcr.io/johnbcodes/node-rust:current-1.74.0 as base
 
 # we need rsync
 RUN set -eux; \
