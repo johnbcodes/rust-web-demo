@@ -1,22 +1,14 @@
 #![warn(clippy::all)]
-#![deny(unreachable_pub, private_in_public)]
+#![deny(unreachable_pub, private_bounds, private_interfaces)]
 #![forbid(unsafe_code)]
 
 mod assets;
 mod diesel_ext;
-mod layout;
-mod people;
+pub mod layout;
+pub mod people;
 mod schema;
-mod scroll;
-mod typeahead;
-
-//noinspection RsUnusedImport
-// Required because of visibility of generated structs by markup.rs
-pub use people::{
-    model::{Person, SearchResult},
-    Pagination,
-};
-pub use typeahead::Submission;
+pub mod scroll;
+pub mod typeahead;
 
 use assets::asset_handler;
 use axum::response::Html;
@@ -95,12 +87,10 @@ async fn main() {
         .layer(trace_layer)
         .fallback_service(asset_handler.into_service());
 
-    let addr = "[::]:8080".parse().unwrap();
+    let addr: std::net::SocketAddr = "[::]:8080".parse().unwrap();
     info!("listening on {addr}");
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
 async fn directory() -> impl IntoResponse {

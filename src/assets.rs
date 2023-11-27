@@ -1,5 +1,5 @@
 use axum::{
-    body::{boxed, Full},
+    body::Body,
     http::{header, StatusCode, Uri},
     response::{IntoResponse, Response},
 };
@@ -27,7 +27,7 @@ where
         match Assets::get(path.as_str()) {
             Some(content) => {
                 info!("Retrieving asset with path: {path}");
-                let body = boxed(Full::from(content.data));
+                let body = Body::from(content.data);
                 let mime = mime_guess::from_path(path).first_or_octet_stream();
                 Response::builder()
                     .header(header::CONTENT_TYPE, mime.as_ref())
@@ -37,7 +37,7 @@ where
             }
             None => Response::builder()
                 .status(StatusCode::NOT_FOUND)
-                .body(boxed(Full::from("Not Found")))
+                .body(Body::from("Not Found"))
                 .unwrap(),
         }
     }
