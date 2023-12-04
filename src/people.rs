@@ -100,7 +100,8 @@ pub(crate) async fn just_page(
     let mut connection = pool.get().unwrap();
     let (people1, people2) = diesel::alias!(people as people1, people as people2);
 
-    // Performance is faster than doing pure select * where limit offset
+    // Performance is much faster than doing pure
+    //   "select * from <table> where <clause> limit <x> offset <y>"
     // See https://stackoverflow.com/a/49651023
     people1
         .filter(

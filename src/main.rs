@@ -101,8 +101,8 @@ async fn directory() -> impl IntoResponse {
         body: markup::new! {
             main {
               ul {
-                li { a[href="/typeahead-search"] { "Typeahead Searching with Turbo Frames and Stimulus controllers" } }
-                li { a[href="/infinite-scroll"] { "Infinite Scroll with Turbo Frames" } }
+                li { a[href="/typeahead-search"] { "Typeahead Searching" } }
+                li { a[href="/infinite-scroll"] { "Infinite Scroll" } }
               }
             }
         },
