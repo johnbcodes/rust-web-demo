@@ -8,20 +8,13 @@
     "build:preclean": "rm -rf ui/target && rm -f templates/base.html && mkdir -p ui/target/build && mkdir -p ui/target/public",
     "build:tailwind": "tailwindcss -i ui/src/main.css -o ui/target/build/main.css",
     "parcel:prepjs": "rsync -a --prune-empty-dirs --include '*/' --include '*.js' --include '*.ico' --exclude '*' ui/src/ ui/target/build",
-    "build:parcel": "parcel build ui/target/build/base.html --public-url=/dist --dist-dir=ui/target/public/",
+    "build:parcel": "parcel build --no-cache ui/target/build/base.html --public-url=/dist --dist-dir=ui/target/public/",
     "parcel:prephtml": "cp ui/src/base.html ui/target/build/"
   },
   "devDependencies": {
-    "@github/combobox-nav": "2.3.0",
-    "@hotwired/stimulus": "3.2.2",
-    "@hotwired/turbo": "7.3.0",
-    "@tailwindcss/forms": "0.5.7",
-    "lodash.debounce": "4.0.8",
+    "htmx.org": "1.9.9",
     "npm-run-all": "4.1.5",
     "parcel": "2.10.3",
     "tailwindcss": "3.3.5"
-  },
-  "dependencies": {
-    "typescript": "^5.3"
   }
 }
