@@ -67,7 +67,7 @@ markup::define! {
                 "hx-get"="/typeahead-search/results",
                 "hx-trigger"="input changed delay:500ms, search",
                 "hx-target"="#search_results"] {}
-                div[id="search_results"] {}
+            div[id="search_results"] {}
         }
     }
 
