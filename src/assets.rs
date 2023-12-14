@@ -1,5 +1,8 @@
-use rocket::fairing::AdHoc;
-use rocket::http::ContentType;
+use rocket::{
+    fairing::AdHoc,
+    http::{ContentType, Header},
+    response::Responder,
+};
 use rust_embed::RustEmbed;
 use std::borrow::Cow;
 use std::ffi::OsStr;
@@ -8,9 +11,6 @@ use std::path::PathBuf;
 #[derive(RustEmbed)]
 #[folder = "$CARGO_MANIFEST_DIR/ui/target/public/"]
 pub(crate) struct Asset;
-
-use rocket::http::Header;
-use rocket::response::Responder;
 
 #[derive(Responder)]
 #[response(status = 200)]
