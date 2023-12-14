@@ -1,0 +1,3 @@
+[default.databases.demo]
+url = "data/demo.db"
+timeout = 10

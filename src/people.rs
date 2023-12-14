@@ -1,11 +1,9 @@
 use crate::diesel_ext::dsl::*;
 use crate::schema::{people, people_fts};
 use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager, Pool};
 use regex::Regex;
-use serde::Deserialize;
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Debug, FromForm)]
 pub struct Pagination {
     pub(crate) page: i64,
     pub(crate) per_page: i64,
@@ -56,14 +54,13 @@ impl Default for Pagination {
     }
 }
 
-pub(crate) async fn perform_search(
-    pool: &Pool<ConnectionManager<SqliteConnection>>,
+pub(crate) fn perform_search(
+    connection: &mut SqliteConnection,
     pagination: &Pagination,
 ) -> Vec<model::SearchResult> {
     let search = pagination.search.as_ref().unwrap();
     let wildcard = format!("{search}*");
 
-    let mut connection = pool.get().unwrap();
     let mut results: Vec<model::SearchResult> = people_fts::table
         .select((
             people_fts::id,
@@ -79,7 +76,7 @@ pub(crate) async fn perform_search(
         .order((people_fts::last_name, people_fts::first_name))
         .limit(pagination.per_page)
         .offset(pagination.offset())
-        .get_results(&mut connection)
+        .get_results(connection)
         .unwrap();
 
     let format = format!("((?i){search})");
@@ -93,11 +90,10 @@ pub(crate) async fn perform_search(
     results
 }
 
-pub(crate) async fn just_page(
-    pool: &Pool<ConnectionManager<SqliteConnection>>,
+pub(crate) fn just_page(
+    connection: &mut SqliteConnection,
     pagination: &Pagination,
 ) -> Vec<model::Person> {
-    let mut connection = pool.get().unwrap();
     let (people1, people2) = diesel::alias!(people as people1, people as people2);
 
     // Performance is much faster than doing pure
@@ -114,6 +110,6 @@ pub(crate) async fn just_page(
             ),
         )
         .order(people1.fields((people::last_name, people::first_name)))
-        .get_results(&mut connection)
+        .get_results(connection)
         .unwrap()
 }
