@@ -25,7 +25,7 @@
 
 * Create volume with `docker volume create db-data`
 * Build with `docker build -t rust-web-demo .`
-* Run with `docker run -itd -e "DATABASE_FILE=/data/demo.db" -p 8080:8080 -v db-data:/data rust-web-demo`
+* Run with `docker run -itd -p 8080:8080 -v db-data:/data rust-web-demo`
 
 #### Docker Compose
 
@@ -41,7 +41,6 @@
   * Update `primary_region` property in `fly.toml`
 * `fly volumes create <VOLUME-NAME> -s 1 -r <REGION>`
   * Update `mounts.source` property in `fly.toml` with <VOLUME-NAME>
-* `fly secrets set DATABASE_URL=/data/demo.db`
 * `docker build -t registry.fly.io/<GLOBALLY-UNIQUE-APP-NAME>:<VERSION-NUMBER> --target deploy .`
 * `fly deploy --image registry.fly.io/<GLOBALLY-UNIQUE-APP-NAME>:<VERSION-NUMBER>`
 
