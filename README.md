@@ -4,8 +4,8 @@
 
 #### Prerequisites
 
-* Rust version 1.62.1 or greater installed
-* NodeJS version 18 or greater installed
+* Rust version 1.67.1 or greater installed
+* NodeJS version 20 or greater installed
 
 #### Install and build
 
@@ -30,7 +30,7 @@
 #### Docker Compose
 
 * Build with `docker compose build`
-* Run with `docker compose up` or `docker compose up -d` (build step not necessary)
+* Run with `docker compose up` or `docker compose up -d` (build step not necessary once built)
 
 ## Initial deployment to fly.io with `flyctl` (aliased to `fly`)
 * Create account if necessary
