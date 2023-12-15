@@ -1,54 +1,48 @@
-use axum::{
-    body::Body,
-    http::{header, StatusCode, Uri},
-    response::{IntoResponse, Response},
+use rocket::{
+    fairing::AdHoc,
+    http::{ContentType, Header},
+    response::Responder,
 };
 use rust_embed::RustEmbed;
-use tracing::info;
+use std::borrow::Cow;
+use std::ffi::OsStr;
+use std::path::PathBuf;
 
 #[derive(RustEmbed)]
 #[folder = "$CARGO_MANIFEST_DIR/ui/target/public/"]
-pub(crate) struct Assets;
+pub(crate) struct Asset;
 
-pub(crate) struct StaticFile<T>(pub(crate) T);
+#[derive(Responder)]
+#[response(status = 200)]
+struct AssetResponse {
+    content: Cow<'static, [u8]>,
+    content_type: ContentType,
+    max_age: Header<'static>,
+}
 
 #[cfg(debug_assertions)]
 const MAX_AGE: &str = "max-age=120";
 #[cfg(not(debug_assertions))]
 const MAX_AGE: &str = "max-age=31536000";
 
-impl<T> IntoResponse for StaticFile<T>
-where
-    T: Into<String>,
-{
-    fn into_response(self) -> Response {
-        let path = self.0.into();
-
-        match Assets::get(path.as_str()) {
-            Some(content) => {
-                info!("Retrieving asset with path: {path}");
-                let body = Body::from(content.data);
-                let mime = mime_guess::from_path(path).first_or_octet_stream();
-                Response::builder()
-                    .header(header::CONTENT_TYPE, mime.as_ref())
-                    .header(header::CACHE_CONTROL, MAX_AGE)
-                    .body(body)
-                    .unwrap()
-            }
-            None => Response::builder()
-                .status(StatusCode::NOT_FOUND)
-                .body(Body::from("Not Found"))
-                .unwrap(),
-        }
-    }
+pub(crate) fn stage() -> AdHoc {
+    AdHoc::on_ignite("Assets Stage", |rocket| async {
+        rocket.mount("/dist", routes![asset_handler])
+    })
 }
 
-pub(crate) async fn asset_handler(uri: Uri) -> impl IntoResponse {
-    let mut path = uri.path().trim_start_matches('/').to_string();
-
-    if path.starts_with("dist/") {
-        path = path.replace("dist/", "");
-    }
-
-    StaticFile(path)
+#[get("/<file..>")]
+fn asset_handler(file: PathBuf) -> Option<AssetResponse> {
+    let filename = file.display().to_string();
+    let asset = Asset::get(&filename)?;
+    let content_type = file
+        .extension()
+        .and_then(OsStr::to_str)
+        .and_then(ContentType::from_extension)
+        .unwrap_or(ContentType::Bytes);
+    Some(AssetResponse {
+        content: asset.data,
+        content_type,
+        max_age: Header::new("Cache-Control", MAX_AGE),
+    })
 }

@@ -15,10 +15,11 @@ RUN USER=root cargo new --bin app
 WORKDIR /app
 
 # copy over infrequently changing files
-COPY package.json package-lock.json Cargo.lock Cargo.toml ./
-# copy your source tree, ordered again by infrequent to frequently changed files
 COPY tailwind.config.js ./
 COPY build.rs ./
+COPY Rocket.toml ./
+COPY package.json package-lock.json Cargo.lock Cargo.toml ./
+# copy your source tree, ordered again by infrequent to frequently changed files
 COPY ./migrations ./migrations
 COPY ./ui ./ui
 COPY ./src ./src
@@ -38,7 +39,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 ## Deploy locally
 FROM debug as dev
 
-ENV DATABASE_URL=sqlite://data/demo.db
+ENV ROCKET_PROFILE=docker
 
 EXPOSE 8080
 
@@ -65,9 +66,10 @@ WORKDIR /
 
 RUN mkdir data
 
+COPY --from=release /app/Rocket.toml .
 COPY --from=release /usr/local/cargo/bin/demo .
 
-ENV DATABASE_URL=sqlite://data/demo.db
+ENV ROCKET_PROFILE=docker
 
 EXPOSE 8080
 

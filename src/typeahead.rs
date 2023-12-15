@@ -2,18 +2,18 @@ use crate::{
     layout::Layout,
     people,
     people::{model::SearchResult, Pagination},
+    Db,
 };
-use axum::{
-    extract::{Query, State},
-    response::{Html, IntoResponse},
-};
-use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager, Pool};
-use serde::Deserialize;
-use std::time::Instant;
-use tracing::info;
+use rocket::{fairing::AdHoc, response::content::RawHtml};
 
-pub(crate) async fn index() -> impl IntoResponse {
+pub(crate) fn stage() -> AdHoc {
+    AdHoc::on_ignite("Typeahead Search Stage", |rocket| async {
+        rocket.mount("/typeahead-search", routes![index, results])
+    })
+}
+
+#[get("/")]
+async fn index() -> RawHtml<String> {
     let template = Layout {
         head: markup::new! {
             title { "Typeahead Search Example" }
@@ -21,35 +21,26 @@ pub(crate) async fn index() -> impl IntoResponse {
         body: Index {},
     };
 
-    Html(template.to_string())
+    RawHtml(template.to_string())
 }
 
-pub(crate) async fn results(
-    query: Query<Submission>,
-    State(pool): State<Pool<ConnectionManager<SqliteConnection>>>,
-) -> impl IntoResponse {
-    let Query(submission) = query;
-    if !submission.query.is_empty() {
+#[get("/results?<query>")]
+async fn results(db: Db, query: String) -> RawHtml<String> {
+    if !query.is_empty() {
         let pagination = Pagination {
             page: 1,
             per_page: 10,
-            search: Some(submission.query.clone()),
+            search: Some(query),
         };
 
-        let start = Instant::now();
-        let results = people::perform_search(&pool, &pagination).await;
-        let count = results.len();
-        let duration = start.elapsed().as_micros();
-        info!("DB duration for {count} record(s): {duration} μs");
-        Html(Results { results: &results }.to_string())
-    } else {
-        Html("".to_string())
-    }
-}
+        let results = db
+            .run(move |conn| people::perform_search(conn, &pagination))
+            .await;
 
-#[derive(Deserialize, Debug)]
-pub struct Submission {
-    query: String,
+        RawHtml(Results { results: &results }.to_string())
+    } else {
+        RawHtml("".to_string())
+    }
 }
 
 markup::define! {
