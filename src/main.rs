@@ -1,4 +1,5 @@
 #![warn(clippy::all)]
+#![allow(clippy::blocks_in_conditions)] // Until https://github.com/rwf2/Rocket/issues/2655 is released
 #![deny(unreachable_pub, private_bounds, private_interfaces)]
 #![forbid(unsafe_code)]
 

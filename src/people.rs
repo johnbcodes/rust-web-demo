@@ -35,7 +35,7 @@ impl Pagination {
         (self.page - 1) * self.per_page
     }
 
-    pub(crate) fn next_page(&self, records: &Vec<model::Person>) -> Option<i64> {
+    pub(crate) fn next_page(&self, records: &[model::Person]) -> Option<i64> {
         if (records.len() as i64) == self.per_page {
             Some(self.page + 1)
         } else {
