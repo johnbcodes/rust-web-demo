@@ -4,13 +4,13 @@
 
 #### Prerequisites
 
-* Rust version 1.67.1 or greater installed
+* Rust version 1.78.0 or greater installed
 * NodeJS version 20 or greater installed
 
 #### Install and build
 
 * Install Node dependencies `npm install`
-* Build web with `npm run build` 
+* Build web with `npm run build`
 * Install Rust dependencies `cargo install`
 * Build with `cargo build`
 * Run with `cargo run`
@@ -45,7 +45,7 @@
 * `fly deploy --image registry.fly.io/<GLOBALLY-UNIQUE-APP-NAME>:<VERSION-NUMBER>`
 
 ## Automated deployment of new versions with GitHub [action](.github/workflows/deploy.yml)
-* [Set up](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) your `FLY_API_TOKEN` [secret](https://fly.io/docs/reference/deploy-tokens/) in your repository 
+* [Set up](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) your `FLY_API_TOKEN` [secret](https://fly.io/docs/reference/deploy-tokens/) in your repository
 * Tag release with a tag name starting with 'v'
   * Example: `git tag -a v2 -m "My new release!" && git push --tags`
 
