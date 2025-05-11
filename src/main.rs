@@ -1,5 +1,6 @@
 #![warn(clippy::all)]
 #![allow(clippy::blocks_in_conditions)] // Until https://github.com/rwf2/Rocket/issues/2655 is released
+#![allow(clippy::needless_lifetimes)] // Until clippy is fixed https://github.com/rust-lang/rust-clippy/issues/13811
 #![deny(unreachable_pub, private_bounds, private_interfaces)]
 #![forbid(unsafe_code)]
 
