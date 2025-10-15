@@ -1,7 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+@import 'tailwindcss' source(none);
 @source "../../src/**/*.rs";
 
 .empty\:hidden:empty { display: none; }
