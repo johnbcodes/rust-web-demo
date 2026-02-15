@@ -12,9 +12,9 @@
         "parcel:prephtml": "cp ui/src/base.html ui/target/build/"
     },
     "devDependencies": {
-        "htmx.org": "2.0",
-        "npm-run-all": "4.1",
-        "parcel": "2.16",
-        "tailwindcss": "4.1.17"
+        "htmx.org": "^2.0",
+        "npm-run-all": "^4.1",
+        "parcel": "^2.16",
+        "tailwindcss": "^4.1.17"
     }
 }
