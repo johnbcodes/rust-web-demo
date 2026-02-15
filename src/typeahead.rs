@@ -1,8 +1,8 @@
 use crate::{
+    Db,
     layout::Layout,
     people,
-    people::{model::SearchResult, Pagination},
-    Db,
+    people::{Pagination, model::SearchResult},
 };
 use rocket::{fairing::AdHoc, response::content::RawHtml};
 

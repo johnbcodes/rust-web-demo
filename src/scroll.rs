@@ -1,4 +1,4 @@
-use crate::{layout::Layout, people, Db};
+use crate::{Db, layout::Layout, people};
 use rocket::{fairing::AdHoc, response::content::RawHtml};
 
 pub(crate) fn stage() -> AdHoc {
