@@ -10,6 +10,8 @@ use std::path::PathBuf;
 
 #[derive(RustEmbed)]
 #[folder = "$CARGO_MANIFEST_DIR/ui/target/public/"]
+#[exclude = "manifest.json"]
+#[exclude = "base.html"]
 pub(crate) struct Asset;
 
 #[derive(Responder)]

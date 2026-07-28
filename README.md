@@ -5,12 +5,13 @@
 #### Prerequisites
 
 * Rust version 1.78.0 or greater installed
-* NodeJS version 20 or greater installed
+* Vite+ installed (`vp`; see https://viteplus.dev/guide/)
+* Node.js 24 (managed automatically by Vite+)
 
 #### Install and build
 
-* Install Node dependencies `npm install`
-* Build web with `npm run build`
+* Install frontend dependencies `vp install`
+* Build web with `vp build` (or `npm run build`)
 * Install Rust dependencies `cargo install`
 * Build with `cargo build`
 * Run with `cargo run`

@@ -1,7 +1,10 @@
-# Add Rust to Node image
-FROM node:lts-trixie-slim AS rust
+# Add Rust to the pinned Vite+ toolchain image
+FROM ghcr.io/voidzero-dev/vite-plus:0.2.6 AS rust
 
-ENV RUSTUP_HOME=/usr/local/rustup \
+USER root
+
+ENV VP_HOME=/root/.vite-plus \
+    RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
     RUST_VERSION=1.93.1
@@ -72,13 +75,6 @@ RUN set -eux; \
 
 FROM rust AS base
 
-# we need rsync
-RUN set -eux; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends rsync; \
-    apt-get clean; \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*;
-
 RUN mkdir -p /data
 
 # create a new empty shell project
@@ -100,10 +96,9 @@ FROM base AS debug
 # Cache dependencies on subsequent builds
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
-    --mount=type=cache,target=/app/.npm \
-    npm set cache /app/.npm && \
-    npm install && \
-    npm run build && \
+    --mount=type=cache,target=/root/.vite-plus \
+    vp install --frozen-lockfile && \
+    vp build && \
     cargo install --debug --path .
 
 ## Deploy locally
@@ -120,10 +115,9 @@ FROM base AS release
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/app/target \
-    --mount=type=cache,target=/app/.npm \
-    npm set cache /app/.npm && \
-    npm ci && \
-    npm run build && \
+    --mount=type=cache,target=/root/.vite-plus \
+    vp install --frozen-lockfile && \
+    vp build && \
     cargo build --release && \
     cargo install --path .
 
