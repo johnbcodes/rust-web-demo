@@ -1,6 +1,5 @@
-# The official Rust image provides the pinned compiler and Cargo toolchain.
-# DO NOT use the slim version as it does not include curl
-# Install the equally pinned Vite+ CLI into that builder image.
+# The official Rust image provides the compiler and Cargo toolchain.
+# The non-slim image includes curl, which is used to install Vite+.
 FROM rust:latest AS base
 
 ENV VP_HOME=/root/.vite-plus \
@@ -18,6 +17,7 @@ WORKDIR /app
 # copy over infrequently changing files
 COPY build.rs ./
 COPY Rocket.toml ./
+COPY rust-toolchain.toml ./
 COPY package.json package-lock.json Cargo.lock Cargo.toml vite.config.mjs ./
 # copy your source tree, ordered again by infrequent to frequently changed files
 COPY ./migrations ./migrations
@@ -53,7 +53,6 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     vp build && \
     cargo build --release && \
     install -Dm755 target/release/demo /usr/local/cargo/bin/demo
-
 
 # Can't use "scratch". By default Rust dynamically links to C libraries, https://bxbrenden.github.io/
 # Compiling with musl has it's own complications, https://github.com/emk/rust-musl-builder/issues
